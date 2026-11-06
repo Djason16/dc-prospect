@@ -29,8 +29,10 @@ export function rendreAujourdhui() {
     $('#jour-label').textContent = `${E.aujourdhui} · zone de la semaine : ${E.zone}`
 
     // getting started, right here (no need to go to the settings)
+    // redrawn only when the step changes (the 15 s refresh must not wipe the fields being filled)
     const etape = !R ? 0 : !R.profilComplet ? 1 : !R.zonesPretes ? 2 : !pret(R) ? 3 : 0
-    $('#mise-en-route').innerHTML = etape ? `<div class="carte" style="border-color:rgba(126,230,168,.35)">
+    const cle = `${etape}|${JSON.stringify(R?.comptes || {})}`
+    if ($('#mise-en-route').dataset.cle !== cle) $('#mise-en-route').dataset.cle = cle, $('#mise-en-route').innerHTML = etape ? `<div class="carte" style="border-color:rgba(126,230,168,.35)">
         <p class="label eyebrow">Mise en route, étape ${etape} sur 3 : ${['', 'qui tu es', 'où chercher', 'tes comptes'][etape]}</p>
         <div style="margin-top:1rem">${etape === 1 ? blocProfil(R, { complet: false }) : etape === 2 ? blocZoneRapide() : `<div class="grille g2">${blocClaude(R)}${blocEnvoi(R)}</div>`}</div>
         <p class="muted petit" style="margin:.4rem 0 0">Ensuite, DC Prospect cherche tes prospects tout seul. Tout reste modifiable dans Réglages.</p></div>` : ''
@@ -58,6 +60,6 @@ export function rendreAujourdhui() {
 
     if (!store.edition) $('#a-valider').innerHTML = E.aValider.map((x) => carteEmail(x, true)).join('') || `<div class="vide">Rien à valider. ${E.stats.prets ? `${E.stats.prets} prospects sont prêts : ils arriveront ici ${esc(E.prochainEnvoi)}.` : 'DC Prospect cherche des prospects.'}</div>`
     $('#tout-valider').hidden = !E.aValider.length
-    $('#file').innerHTML = E.file.map((x) => carteEmail(x, false)).join('') || `<div class="vide">Rien en attente. Créneaux : ${esc(E.fenetres)}, du mardi au jeudi.</div>`
+    $('#file').innerHTML = E.file.map((x) => carteEmail(x, false)).join('') || `<div class="vide">Rien en attente. Créneaux : ${esc(E.fenetres)}, le ${esc(E.joursEnvoi)} (Réglages, Avancé, Calendrier).</div>`
     $('#journal').innerHTML = E.journal.slice(0, 20).map((j) => `<div style="padding:.45rem 0;border-bottom:1px solid var(--line)"><span class="muted">${esc(j.heure)}</span> · ${esc(j.texte)}</div>`).join('') || '<div class="vide">Rien pour l\'instant.</div>'
 }

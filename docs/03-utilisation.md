@@ -1,10 +1,12 @@
 # 3. Utilisation au quotidien
 
-## La routine (10 minutes, mardi et jeudi)
-1. Le matin, DC Prospect s'ouvre tout seul (notification Windows) : il a préparé le **lot du jour**.
+## La routine (10 minutes, les jours d'envoi)
+1. Un jour d'envoi (mardi, mercredi et jeudi par défaut), DC Prospect s'ouvre tout seul dès que le PC est allumé (notification Windows) : il a préparé le **lot du jour**.
 2. Écran **Aujourd'hui**, partie « E-mails à valider » : lis chaque e-mail, corrige-le si besoin directement dans la carte.
 3. Clique sur **Valider** pour chacun, ou **Tout valider** (les e-mails qui ont un problème signalé en rouge ne sont pas validés).
-4. C'est tout : les e-mails partent tout seuls pendant les créneaux (8 h - 10 h et 13 h 30 - 15 h), un toutes les 2 à 4 minutes. Le PC doit rester allumé (la fenêtre peut être fermée).
+4. C'est tout : les e-mails partent tout seuls pendant les créneaux (8 h - 10 h et 13 h 30 - 15 h par défaut), un toutes les 2 à 4 minutes. Le PC doit rester allumé (la fenêtre peut être fermée).
+
+Tu n'es pas obligé de valider le matin : si tu ouvres le PC à 13 h, le lot est préparé à ce moment-là et part au créneau suivant du jour. Validé après le dernier créneau, il part au prochain jour d'envoi. Jours, créneaux, délais des relances et écart entre deux e-mails : **Réglages, Avancé, Calendrier** (voir [4. Réglages](04-reglages.md)).
 
 Quand un prospect répond, une notification arrive et sa réponse apparaît en haut d'**Aujourd'hui**.
 

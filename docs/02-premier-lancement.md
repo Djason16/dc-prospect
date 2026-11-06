@@ -54,4 +54,4 @@ Une adresse perso convient pour démarrer, mais une adresse à ton nom de domain
 Clique sur **M'envoyer un e-mail de test** : tu reçois un e-mail. Vérifie que l'expéditeur est bien ton adresse pro et que ta signature est en dessous.
 
 ## Et ensuite ?
-La mise en route disparaît. DC Prospect commence à chercher des prospects (jours ouvrés). Les premiers e-mails à valider arrivent le **prochain mardi ou jeudi** : voir [3. Utilisation au quotidien](03-utilisation.md).
+La mise en route disparaît. DC Prospect commence à chercher des prospects (les jours de recherche, du lundi au vendredi par défaut). Les premiers e-mails à valider arrivent le **prochain jour d'envoi** (mardi, mercredi ou jeudi par défaut ; Réglages, Avancé, Calendrier) : voir [3. Utilisation au quotidien](03-utilisation.md).

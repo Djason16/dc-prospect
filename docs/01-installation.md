@@ -13,10 +13,11 @@
 Node.js n'est **pas** nécessaire : il est inclus dans l'application.
 
 ## Installer
-1. Double-clique sur `DC-Prospect-Setup.exe`.
+1. Télécharge `DC-Prospect-Setup-<version>.exe` dans les releases du dépôt GitHub (https://github.com/Djason16/dc-prospect/releases), ou prends `DC-Prospect-Setup.exe` dans le dossier `Installation` de tes données, puis double-clique dessus.
 2. Windows peut afficher « Windows a protégé votre ordinateur » (l'application n'est pas signée) : clique sur **Informations complémentaires**, puis **Exécuter quand même**.
-3. L'installation se fait toute seule, sans droits d'administrateur, dans `%LOCALAPPDATA%\Programs\dc-prospect`. Un raccourci **DC Prospect** est ajouté sur le bureau et dans le menu Démarrer, puis l'application s'ouvre.
-4. Suis la mise en route : [2. Premier lancement](02-premier-lancement.md).
+3. L'installation se fait toute seule, sans droits d'administrateur, dans `%LOCALAPPDATA%\Programs\dc-prospect`. Un raccourci **DC Prospect** est ajouté sur le bureau et dans le menu Démarrer.
+4. **Si Claude Code manque**, l'installateur te demande « L'installer maintenant ? » : réponds Oui, une fenêtre lance l'installateur officiel d'Anthropic. Si tu réponds Non, DC Prospect te le proposera au premier lancement. Rien d'autre n'est à installer : Node.js et le navigateur intégré sont inclus dans l'application.
+5. L'application s'ouvre : suis la mise en route, [2. Premier lancement](02-premier-lancement.md).
 
 ## Démarrage avec Windows
 DC Prospect démarre tout seul à l'ouverture de ta session Windows, sans fenêtre. Il s'ouvre seulement s'il a quelque chose pour toi (e-mails à valider, réponse, erreur). Pour le désactiver : Réglages, Application, « Démarrer avec Windows ».
@@ -26,6 +27,22 @@ Quand tu fermes la fenêtre, l'application **continue** près de l'horloge (icô
 ## Mettre à jour
 - Quand une nouvelle version est déposée dans le sous-dossier `Installation` de ton dossier de données (voir [8. Développement](08-developpement.md), « Publier »), DC Prospect affiche « Nouvelle version » : clique sur **Installer**. Il se ferme, s'installe et se relance.
 - À la main : relance simplement le nouveau `DC-Prospect-Setup.exe`. Tes données et tes comptes sont gardés.
+
+## Utiliser Google Drive (facultatif)
+DC Prospect n'a besoin d'aucun cloud : sans rien faire, ses données sont dans `Documents\DC Prospect`, sur ce PC. Google Drive sert à deux choses différentes, toutes les deux facultatives.
+
+### 1. Mettre tes données dans Google Drive (sauvegarde et plusieurs PC)
+DC Prospect ne se « connecte » pas à Drive : il écrit dans un dossier de ton PC que **Google Drive pour ordinateur** synchronise tout seul.
+1. Installe Google Drive pour ordinateur (https://www.google.com/drive/download/) et connecte ton compte Google. Ton Drive apparaît comme un disque dans l'Explorateur (souvent `G:\Mon Drive`).
+2. Dans DC Prospect : Réglages, Avancé, Fichiers et outils, **Changer de dossier**. Choisis ou crée un dossier dans ton Drive (par exemple `G:\Mon Drive\DC Prospect`). L'application redémarre.
+3. C'est tout : profil, zones, prospects, tableau et rapports sont maintenant dans ce dossier, sauvegardés par Google et visibles sur drive.google.com.
+
+Ça marche de la même façon avec OneDrive ou Dropbox : choisis simplement un dossier qu'ils synchronisent.
+
+Les mots de passe ne vont jamais dans ce dossier : ils restent sur chaque PC, chiffrés (voir [6. Règles, données et sécurité](06-donnees-et-securite.md)).
+
+### 2. Tableau en Google Sheets et rapports en Google Docs
+Là, DC Prospect se connecte à ton compte Google pour créer un vrai Google Sheets et des Google Docs, en plus du fichier Excel. Il faut une fois un « fichier client » Google : la marche à suivre est dans [4. Réglages](04-reglages.md), « Google Sheets et Google Docs ».
 
 ## Plusieurs PC
 1. Installe DC Prospect sur chaque PC.

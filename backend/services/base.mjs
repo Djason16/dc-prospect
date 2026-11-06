@@ -93,8 +93,13 @@ export function joursFeries(annee) {
     ])
 }
 
-export const estOuvre = (s) => { const n = dateDe(s).getDay(); return n >= 1 && n <= 5 && !joursFeries(+s.slice(0, 4)).has(s) }
-export const estJourEnvoi = (s) => estOuvre(s) && cfg.joursEnvoi.includes(dateDe(s).getDay())
+// Calendar from the settings: days of the week (0 = Sunday ... 6 = Saturday), public holidays skipped or not
+const ferie = (s) => cfg.sauterFeries !== false && joursFeries(+s.slice(0, 4)).has(s)
+export const estJourRecherche = (s) => (cfg.joursRecherche || [1, 2, 3, 4, 5]).includes(dateDe(s).getDay()) && !ferie(s)
+export const estJourEnvoi = (s) => (cfg.joursEnvoi || [2, 3, 4]).includes(dateDe(s).getDay()) && !ferie(s)
+export const estOuvre = estJourRecherche // older name
+export const NOMS_JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
+export const texteJours = (liste) => [1, 2, 3, 4, 5, 6, 0].filter((j) => liste.includes(j)).map((j) => NOMS_JOURS[j]).join(', ') || 'aucun jour'
 
 export function prochainJourEnvoi(depuis = jour()) {
     let s = depuis

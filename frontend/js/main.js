@@ -13,27 +13,57 @@ monterAppShell()
 
 const VUES = { aujourdhui: rendreAujourdhui, prospects: rendreProspects, reglages: rendreReglages, aide: rendreAide }
 
-function rendre() {
+// periodique = the refresh every 15 s: the settings and the help are not redrawn
+// (it closed « Avancé » and wiped what was being typed)
+function rendre({ periodique = false } = {}) {
     rendreAppShell()
-    VUES[store.vue]?.()
+    if (periodique && (store.vue === 'reglages' || store.vue === 'aide')) return
+    VUES[store.vue]?.({ periodique })
 }
 
-async function charger() {
+// Start screen: stays until the engine answers (it can take a few seconds when Windows starts)
+let demarre = false
+async function demarrer(essai = 0) {
+    const r = await api.get('/etat')
+    if (!r.success && essai < 60) {
+        if (essai > 2) $('#chargement-texte').textContent = 'Démarrage du moteur, encore un instant'
+        return setTimeout(() => demarrer(essai + 1), 1000)
+    }
+    store.E = r.success ? r : null
+    await chargerReglages()
+    demarre = true
+    rendre()
+    $('#chargement').classList.add('fini')
+    setTimeout(() => $('#chargement')?.remove(), 500)
+    setInterval(() => charger({ periodique: true }), 15000)
+}
+
+async function charger(options = {}) {
+    if (!demarre) return
     const r = await api.get('/etat')
     store.E = r.success ? r : null
     if (!store.R) await chargerReglages()
-    rendre()
+    rendre(options)
 }
 
+// after an action (save, connect...): everything is redrawn with fresh settings
 async function recharger() {
     store.R = null
     await charger()
+    if (store.vue === 'reglages') rendreReglages()
     return true
 }
 
+const attente = (texte) => `<div class="vue-charge"><span class="roue"></span>${texte}</div>`
+
 function aller(v) {
     afficherVue(v)
-    if (v === 'reglages') chargerReglages().then(rendre)
+    if (v === 'reglages') {
+        // the settings are reloaded each time: a spinner while they come (only if nothing is shown yet)
+        const el = $('#vue-reglages')
+        if (!el.innerHTML.trim()) el.innerHTML = attente('Chargement des réglages')
+        chargerReglages().then(rendre)
+    }
     else rendre()
 }
 
@@ -61,7 +91,7 @@ document.addEventListener('click', async (ev) => {
         return
     }
     if (b.id === 'tout-valider') {
-        b.disabled = true
+        b.disabled = true; b.classList.add('charge')
         let n = 0
         for (const c of $$('#a-valider .carte')) {
             if ($('.pb', c)) continue
@@ -69,7 +99,7 @@ document.addEventListener('click', async (ev) => {
             if (r.success) n++; else toast(r.error, true)
         }
         toast(`${n} e-mail(s) validé(s) : ils partiront aux prochains créneaux`)
-        b.disabled = false; store.edition = false
+        b.disabled = false; b.classList.remove('charge'); store.edition = false
         return charger()
     }
     if (b.dataset.hote) {
@@ -83,5 +113,4 @@ document.addEventListener('click', async (ev) => {
 
 document.addEventListener('change', (ev) => changeReglages(ev.target, recharger))
 
-charger()
-setInterval(charger, 15000)
+demarrer()

@@ -15,3 +15,17 @@ Get-ChildItem $dossier -Filter '*.exe' | Remove-Item -Force
 Copy-Item (Join-Path $racine "dist\DC-Prospect-Setup-$version.exe") -Destination (Join-Path $dossier 'DC-Prospect-Setup.exe') -Force
 @{ version = $version; fichier = 'DC-Prospect-Setup.exe'; date = (Get-Date -Format 'yyyy-MM-dd HH:mm') } | ConvertTo-Json | Set-Content (Join-Path $dossier 'latest.json') -Encoding UTF8
 Write-Host "Publié : DC Prospect $version dans $dossier" -ForegroundColor Green
+
+# GitHub release with the installer (the file is too big for the repository itself: GitHub refuses files over 100 MB)
+if (Get-Command gh -ErrorAction SilentlyContinue) {
+    $tag = "v$version"
+    $notes = Join-Path $env:TEMP "dc-prospect-$tag.md"
+    $journal = Get-Content (Join-Path $racine 'CHANGELOG.md') -Raw
+    $debut = $journal.IndexOf("## $version")
+    if ($debut -ge 0) { $suite = $journal.IndexOf("`n## ", $debut + 4); $texte = if ($suite -gt 0) { $journal.Substring($debut, $suite - $debut) } else { $journal.Substring($debut) } } else { $texte = "DC Prospect $version" }
+    Set-Content $notes $texte -Encoding UTF8
+    gh release view $tag *> $null
+    if ($LASTEXITCODE -eq 0) { gh release upload $tag (Join-Path $racine "dist\DC-Prospect-Setup-$version.exe") --clobber }
+    else { gh release create $tag (Join-Path $racine "dist\DC-Prospect-Setup-$version.exe") --title "DC Prospect $version" --notes-file $notes }
+    Write-Host "Release GitHub $tag à jour" -ForegroundColor Green
+}

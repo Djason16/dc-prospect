@@ -5,7 +5,7 @@ import path from 'node:path'
 import { cfg, dossierDonnees, semaineIso } from './base.mjs'
 
 const fichier = path.join(dossierDonnees, 'reglages.json')
-const MODIFIABLES = ['zones', 'secteurs', 'maxRecherchesParJour', 'reserveProspectsPrets', 'j0ParJour', 'maxEmailsParJour', 'fenetres', 'relances', 'modeleRecherche', 'modeleRedaction', 'expediteur', 'smtp', 'imap', 'profil']
+const MODIFIABLES = ['zones', 'secteurs', 'maxRecherchesParJour', 'reserveProspectsPrets', 'j0ParJour', 'maxEmailsParJour', 'fenetres', 'relances', 'modeleRecherche', 'modeleRedaction', 'expediteur', 'smtp', 'imap', 'profil', 'joursEnvoi', 'joursRecherche', 'ecartMinutes', 'sauterFeries']
 
 // Profile of the user (whoever uses the app): who writes the e-mails, what is sold, the signatures
 export const CHAMPS_PROFIL = ['prenom', 'nom', 'entreprise', 'activite', 'offre', 'siteWeb', 'ville', 'telephone', 'titre', 'besoin', 'signaturePrincipale', 'signatureSecondaire', 'nomSignatureSecondaire']
@@ -86,7 +86,33 @@ export function enregistrerReglages(r) {
     }
     const err = nombre('maxRecherchesParJour', 0, 300) || nombre('reserveProspectsPrets', 5, 200) || nombre('maxEmailsParJour', 1, 40)
     if (err) return err
-    if (r.j0ParJour) nouveau.j0ParJour = Object.fromEntries(Object.entries(r.j0ParJour).map(([j, n]) => [j, Math.max(0, Math.min(40, Math.round(Number(n) || 0)))]))
+    if (r.j0ParJour) nouveau.j0ParJour = Object.fromEntries(Object.entries(r.j0ParJour).filter(([j]) => /^[0-6]$/.test(j)).map(([j, n]) => [j, Math.max(0, Math.min(40, Math.round(Number(n) || 0)))]))
+
+    // Calendar: days, time slots, follow-up delays, gap between two e-mails, public holidays
+    const jours = (v) => [...new Set((v || []).map(Number).filter((j) => Number.isInteger(j) && j >= 0 && j <= 6))]
+    if (r.joursRecherche) nouveau.joursRecherche = jours(r.joursRecherche)
+    if (r.joursEnvoi) {
+        nouveau.joursEnvoi = jours(r.joursEnvoi)
+        if (!nouveau.joursEnvoi.length) return 'Choisis au moins un jour d\'envoi.'
+    }
+    if (r.fenetres) {
+        const hm = /^([01]\d|2[0-3]):[0-5]\d$/
+        const f = r.fenetres.map(([a, b]) => [String(a || '').trim(), String(b || '').trim()]).filter(([a, b]) => a || b)
+        if (!f.length) return 'Garde au moins un créneau d\'envoi.'
+        if (f.some(([a, b]) => !hm.test(a) || !hm.test(b) || a >= b)) return 'Chaque créneau doit avoir une heure de début avant l\'heure de fin (ex. 08:00 - 10:00).'
+        nouveau.fenetres = f.sort((x, y) => x[0].localeCompare(y[0]))
+    }
+    if (r.relances) {
+        const r1 = Math.round(Number(r.relances.r1)), r2 = Math.round(Number(r.relances.r2))
+        if (!(r1 >= 1 && r1 <= 30) || !(r2 > r1 && r2 <= 60)) return 'Relance 1 : entre 1 et 30 jours ; relance 2 : après la relance 1, 60 jours au plus.'
+        nouveau.relances = { r1, r2 }
+    }
+    if (r.ecartMinutes) {
+        const [a, b] = r.ecartMinutes.map((x) => Math.round(Number(x)))
+        if (!(a >= 1 && b >= a && b <= 60)) return 'Écart entre deux e-mails : de 1 à 60 minutes, le minimum avant le maximum.'
+        nouveau.ecartMinutes = [a, b]
+    }
+    if (typeof r.sauterFeries === 'boolean') nouveau.sauterFeries = r.sauterFeries
     let actuel = {}
     try { actuel = JSON.parse(fs.readFileSync(fichier, 'utf8')) } catch {}
     fs.mkdirSync(dossierDonnees, { recursive: true })

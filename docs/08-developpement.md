@@ -48,7 +48,11 @@ dc-prospect/
 ├── electron/main.mjs           l'application Windows, les actions « hôte » (comptes, dossiers, mises à jour, MCP)
 ├── ressources/prompts/         fiche-prospect.txt, premier-email.txt, relance.txt ({{NOM}}, {{ACTIVITE}}, {{OFFRE}}...)
 ├── build/icon.png              icône (512 px)
+├── build/fonts/, build/logo-light.png  polices Barlow Condensed (licence OFL) et logo, pour la bannière
+├── build/fonts/, build/logo-light.png  polices Barlow Condensed (licence OFL) et logo pour la bannière
+├── build/installer.nsh         étape en plus de l'installateur : propose d'installer Claude Code s'il manque
 ├── scripts/publier.ps1         fabrique l'installateur et le dépose dans <données>\Installation
+├── scripts/make-banner.py      dessine la bannière et la ligne du README (Python + Pillow), même mise en page que DC Scaffold
 ├── start.bat, start.ps1        le menu du projet
 ├── config.json                 réglages par défaut, sans rien de personnel
 └── package.json
@@ -95,6 +99,8 @@ Toutes les réponses : `{ success: true, ...data }` ou `{ success: false, error,
 ## Fabriquer et publier
 1. Monte `version` dans `package.json` (ex. `1.0.1`) et note les changements dans `CHANGELOG.md`.
 2. `start.bat`, touche `P` : fabrique `dist\DC-Prospect-Setup-<version>.exe`, le copie en `DC-Prospect-Setup.exe` dans `<dossier de données>\Installation` et écrit `latest.json`. Les PC qui utilisent ce dossier de données affichent « Nouvelle version ».
+3. Le même script crée (ou met à jour) la **release GitHub** `v<version>` avec l'installateur en pièce jointe (il faut `gh` connecté). L'installateur ne va jamais dans le dépôt lui-même : GitHub refuse les fichiers de plus de 100 Mo.
+4. Commit et push des changements (en anglais).
 
 Pièges :
 - Un build interrompu laisse des fichiers ouverts dans `dist` : arrête les processus `app-builder` restants avant de relancer.

@@ -1,7 +1,7 @@
 // Engine of DC Prospect: prepares the day, serves the app page, sends approved e-mails in the plan's time slots.
 // Used by the Windows app (electron/main.mjs) and by run.mjs (without window). hote = { ouvrir(), notifier(titre, texte), version, ... }
 import fs from 'node:fs'
-import { cfg, jour, estOuvre, chargerEtat, sauverEtat, log } from './services/base.mjs'
+import { cfg, jour, estJourRecherche, chargerEtat, sauverEtat, log } from './services/base.mjs'
 import { synchroniserReponses, rechercher, preparerLot, envoyerSuivant, oublier, aValider } from './services/prospection.mjs'
 import { ecrireRapport, ecrireTableau } from './services/rapport.mjs'
 import { demarrerServeur } from './server.mjs'
@@ -63,17 +63,18 @@ export const app = {
             avancer('lecture des réponses et des STOP')
             await this.synchro()
             oublier(this.etat)
-            if (estOuvre(aujourdhui) || force) {
+            // research and sending each follow their own days (Settings, Calendar)
+            if (estJourRecherche(aujourdhui) || force) {
                 avancer('recherche de nouveaux prospects')
                 const r = await rechercher(this.etat, { surAvancement: avancer })
                 this.claudeOk = !(r.essais && r.erreurs === r.essais)
-                if (r.essais) this.infos.push(`${r.essais} entreprises étudiées : ${r.trouves} avec e-mail prêtes, ${r.appels} à appeler.`)
+                if (r.essais) this.infos.push(`${r.essais} recherches : ${r.trouves} prospects prêts.`)
                 this.changement()
-                avancer('préparation du lot du jour')
-                await preparerLot(this.etat, { surAvancement: avancer })
             } else {
-                this.infos.push('Week-end ou jour férié : seulement la lecture des réponses.')
+                this.infos.push('Pas un jour de recherche (Réglages, Calendrier).')
             }
+            avancer('préparation du lot du jour')
+            await preparerLot(this.etat, { surAvancement: avancer }) // does nothing outside the sending days
             if (!profilComplet()) this.erreur = "Remplis ton profil (Aujourd'hui, Mise en route) : DC Prospect en a besoin pour chercher et écrire."
             else if (!zonesActives().length) this.erreur = "Choisis au moins une zone (Aujourd'hui, Mise en route)."
             else if (!envoiBranche()) this.erreur = "Envoi pas encore branché : ton Gmail ou ta boîte pro (Aujourd'hui, Mise en route). Rien ne peut partir avant."

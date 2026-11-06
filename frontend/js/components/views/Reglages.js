@@ -127,12 +127,12 @@ export function rendreReglages() {
         <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:center">
             <strong class="display display-s">DC Prospect ${esc(c.version || '')}</strong>
             ${sw('demarrage', R.demarrageAuto, 'Démarrer avec Windows', !app)}
-            <span class="muted petit">${c.miseAJour ? `Mise à jour ${esc(c.miseAJour.version)} prête.` : 'Les mises à jour arrivent toutes seules par le Drive.'}</span>
+            <span class="muted petit">${c.miseAJour ? `Mise à jour ${esc(c.miseAJour.version)} prête.` : 'Mises à jour : par le dossier Installation de tes données, ou sur la page des releases.'}</span>
         </div>
         <div class="actions">${c.miseAJour ? '<button class="btn primaire petit" data-hote="installerMiseAJour">Installer la mise à jour</button>' : ''}<button class="btn petit" data-ouvrir="donnees">Ouvrir le dossier (tableau, rapports)</button><button class="btn lien petit" data-hote="quitter">Quitter l'application</button></div>
     </div></div>
 
-    <details class="section avance"><summary class="label eyebrow">Avancé : zones, métiers, volumes, serveur mail, Google</summary>
+    <details class="section avance"><summary class="label eyebrow">Avancé : zones, métiers, volumes, calendrier, serveur mail, Google</summary>
 
     <div class="section"><p class="label eyebrow">Zones</p>
         <p class="muted">Une zone par semaine, chacune son tour (cette semaine : <strong style="color:var(--paper)">${esc(R.zoneDeLaSemaine || 'aucune')}</strong>). Départements (60, 75...) ou codes postaux (60200, 60150...), séparés par des virgules.</p>
@@ -149,8 +149,9 @@ export function rendreReglages() {
     <div class="section"><p class="label eyebrow">Volumes</p><div class="grille g3">
         ${[['maxRecherchesParJour', 'Recherches web par jour', 'Une recherche = un métier dans une ville (jusqu\'à 6 entreprises avec e-mail). Baisse si l\'abonnement Claude sature.'], ['reserveProspectsPrets', 'Réserve de prospects prêts', '1ers e-mails rédigés d\'avance'], ['maxEmailsParJour', 'E-mails par jour au maximum', 'Plan : 20']]
             .map(([k, l, d]) => `<div class="tuile"><p class="label">${l}</p><input type="number" min="0" data-volume="${k}" value="${esc(R[k])}" style="margin:.7rem 0 .4rem;font-size:1.4rem"><p class="muted petit" style="margin:0">${d}</p></div>`).join('')}
-        ${[['2', 'mardi'], ['3', 'mercredi'], ['4', 'jeudi']].map(([j, n]) => `<div class="tuile"><p class="label">1ers e-mails le ${n}</p><input type="number" min="0" max="40" data-j0="${j}" value="${esc(R.j0ParJour?.[j] || 0)}" style="margin:.7rem 0 0;font-size:1.4rem"></div>`).join('')}
     </div><div class="actions"><button class="btn primaire petit" data-enregistrer="volumes">Enregistrer les volumes</button></div></div>
+
+    ${blocCalendrier(R)}
 
     <div class="section"><p class="label eyebrow">Adresse d'envoi et serveur de ta boîte</p>
         <p class="muted">Si tu changes d'hébergeur : choisis-le, enregistre, puis retape le mot de passe (Comptes). Pense aussi aux réglages SPF, DKIM et DMARC du domaine chez le nouvel hébergeur.</p>
@@ -175,6 +176,35 @@ export function rendreReglages() {
         <p class="muted petit">Données, tableau et rapports : ${esc(c.dossier || R.dossierDrive)}</p>
         <div class="actions"><button class="btn petit" data-ouvrir="rapports">Rapports</button><button class="btn petit" data-ouvrir="journaux">Journaux</button><button class="btn lien petit" data-hote="choisirDossier">Changer de dossier</button><button class="btn lien petit" data-hote="declarerMcp">Déclarer le MCP dans Claude Code</button><button class="btn lien petit" data-hote="verifierMiseAJour">Chercher une mise à jour</button></div></div>
     </details>`
+}
+
+// ---------- Calendar: research days, sending days and their first e-mails, time slots, follow-ups, rhythm, holidays ----------
+const JOURS = [[1, 'Lundi'], [2, 'Mardi'], [3, 'Mercredi'], [4, 'Jeudi'], [5, 'Vendredi'], [6, 'Samedi'], [0, 'Dimanche']]
+const ligneCreneau = ([a, b]) => `<div class="creneau" style="display:flex;gap:.7rem;align-items:center;margin-bottom:.5rem"><input type="time" data-c="debut" value="${esc(a)}" style="width:9rem"><span class="muted">à</span><input type="time" data-c="fin" value="${esc(b)}" style="width:9rem"><button class="btn lien petit" data-supprimer-creneau>Supprimer</button></div>`
+
+function blocCalendrier(R) {
+    const envoi = R.joursEnvoi || [2, 3, 4], recherche = R.joursRecherche || [1, 2, 3, 4, 5]
+    return `<div class="section"><p class="label eyebrow">Calendrier</p>
+        <p class="muted">Quand DC Prospect cherche, quand il envoie, et à quel rythme. Les réponses et les STOP, eux, sont lus tous les jours, toutes les 15 minutes.</p>
+        <div class="grille g2">
+            <div class="tuile"><p class="label">Jours de recherche</p><p class="muted petit">Recherche de prospects et rédaction des 1ers e-mails</p>
+                <div style="display:flex;flex-wrap:wrap;gap:.8rem 1.4rem;margin-top:.7rem">${JOURS.map(([j, n]) => `<label class="interrupteur"><input type="checkbox" data-jour-recherche="${j}" ${recherche.includes(j) ? 'checked' : ''}> ${n}</label>`).join('')}</div></div>
+            <div class="tuile"><p class="label">Jours d'envoi et 1ers e-mails par jour</p><p class="muted petit">Les relances dues partent ces jours-là en premier ; puis les 1ers e-mails, jusqu'au maximum par jour</p>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem 1.4rem;margin-top:.7rem">${JOURS.map(([j, n]) => `<div style="display:flex;align-items:center;gap:.7rem"><label class="interrupteur" style="min-width:8.5rem"><input type="checkbox" data-jour-envoi="${j}" ${envoi.includes(j) ? 'checked' : ''}> ${n}</label><input type="number" min="0" max="40" data-j0="${j}" value="${esc(R.j0ParJour?.[j] ?? 0)}" title="1ers e-mails le ${n.toLowerCase()}" style="width:5rem;padding:.4rem .6rem"></div>`).join('')}</div></div>
+            <div class="tuile"><p class="label">Créneaux d'envoi</p><p class="muted petit">Heures où les e-mails validés partent (les mêmes pour chaque jour d'envoi)</p>
+                <div id="creneaux" style="margin-top:.7rem">${(R.fenetres || []).map(ligneCreneau).join('')}</div>
+                <button class="btn petit" data-ajouter-creneau>Ajouter un créneau</button></div>
+            <div class="tuile"><p class="label">Relances et rythme</p>
+                <div style="display:grid;grid-template-columns:auto 6rem;gap:.6rem 1rem;align-items:center;margin-top:.7rem">
+                    <span>Relance 1 : jours après le 1er e-mail</span><input type="number" min="1" max="30" id="cal-r1" value="${esc(R.relances?.r1 ?? 4)}">
+                    <span>Relance 2 : jours après le 1er e-mail</span><input type="number" min="2" max="60" id="cal-r2" value="${esc(R.relances?.r2 ?? 11)}">
+                    <span>Écart entre deux e-mails : minimum (minutes)</span><input type="number" min="1" max="60" id="cal-emin" value="${esc(R.ecartMinutes?.[0] ?? 2)}">
+                    <span>Écart entre deux e-mails : maximum (minutes)</span><input type="number" min="1" max="60" id="cal-emax" value="${esc(R.ecartMinutes?.[1] ?? 4)}">
+                </div>
+                <div style="margin-top:1rem">${sw('cal-feries', R.sauterFeries !== false, 'Ne rien chercher ni envoyer les jours fériés')}</div>
+                <p class="muted petit" style="margin:.6rem 0 0">Une relance qui tombe un jour sans envoi part au jour d'envoi suivant.</p></div>
+        </div>
+        <div class="actions"><button class="btn primaire petit" data-enregistrer="calendrier">Enregistrer le calendrier</button></div></div>`
 }
 
 const ligneZone = (z) => `<div class="zone"><input type="text" data-k="nom" value="${esc(z.nom)}" aria-label="Nom"><input type="text" data-k="departements" value="${esc((z.departements || []).join(', '))}" aria-label="Départements"><input type="text" data-k="codesPostaux" value="${esc((z.codesPostaux || []).join(', '))}" aria-label="Codes postaux"><label class="interrupteur"><input type="checkbox" data-k="active" ${z.active !== false ? 'checked' : ''}></label><button class="btn lien petit" data-supprimer>Supprimer</button></div>`
@@ -221,15 +251,26 @@ export async function clicReglages(b, recharger) {
     if (b.hasAttribute('data-ajouter-zone')) { $('#zones').insertAdjacentHTML('beforeend', ligneZone({ nom: '', departements: [], codesPostaux: [], active: true })); return true }
     if (b.hasAttribute('data-ajouter-metier')) { $('#metiers').insertAdjacentHTML('beforeend', ligneMetier({ nom: '', naf: [], actif: true })); return true }
     if (b.hasAttribute('data-supprimer')) { b.closest('.zone, .metier').remove(); return true }
+    if (b.hasAttribute('data-ajouter-creneau')) { $('#creneaux').insertAdjacentHTML('beforeend', ligneCreneau(['', ''])); return true }
+    if (b.hasAttribute('data-supprimer-creneau')) { b.closest('.creneau').remove(); return true }
     if (b.dataset.enregistrer) {
         const k = b.dataset.enregistrer
         let d
         if (k === 'zones') d = { zones: lireLignes('#zones') }
         if (k === 'secteurs') d = { secteurs: lireLignes('#metiers') }
-        if (k === 'volumes') { d = { j0ParJour: {} }; $$('[data-volume]').forEach((i) => (d[i.dataset.volume] = Number(i.value))); $$('[data-j0]').forEach((i) => (d.j0ParJour[i.dataset.j0] = Number(i.value))) }
+        if (k === 'volumes') { d = {}; $('[data-volume]').forEach((i) => (d[i.dataset.volume] = Number(i.value))) }
+        if (k === 'calendrier') d = {
+            joursRecherche: $('[data-jour-recherche]').filter((i) => i.checked).map((i) => Number(i.dataset.jourRecherche)),
+            joursEnvoi: $('[data-jour-envoi]').filter((i) => i.checked).map((i) => Number(i.dataset.jourEnvoi)),
+            j0ParJour: Object.fromEntries($('[data-j0]').map((i) => [i.dataset.j0, Number(i.value)])),
+            fenetres: $('#creneaux .creneau').map((l) => [$('[data-c=debut]', l).value, $('[data-c=fin]', l).value]),
+            relances: { r1: Number($('#cal-r1').value), r2: Number($('#cal-r2').value) },
+            ecartMinutes: [Number($('#cal-emin').value), Number($('#cal-emax').value)],
+            sauterFeries: $('#cal-feries').checked,
+        }
         if (k === 'messagerie') d = { messagerie: { nom: $('#mg-nom').value, adresse: $('#mg-adresse').value, smtpHote: $('#mg-smtp').value, smtpPort: $('#mg-smtp-port').value, imapHote: $('#mg-imap').value, imapPort: $('#mg-imap-port').value } }
         const r = await action(b, () => exiger(api.put('/reglages', d)), 'Enregistré')
-        if (r) { store.R = { ...store.R, ...r.reglages }; rendreReglages(); if (k === 'secteurs' || k === 'zones') $('.avance').open = true }
+        if (r) { store.R = { ...store.R, ...r.reglages }; rendreReglages(); if (['secteurs', 'zones', 'volumes', 'calendrier', 'messagerie'].includes(k)) $('.avance').open = true }
         return true
     }
     return false

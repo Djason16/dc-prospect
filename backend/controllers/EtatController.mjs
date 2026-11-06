@@ -1,5 +1,5 @@
 // State of the day for the interface (GET /api/etat) and preview of an e-mail with the signature (GET /api/apercu/:id/:etape)
-import { cfg, jour, ajouterJours, dateDe, dateFr, nomJour, prochainJourEnvoi, dansFenetre } from '../services/base.mjs'
+import { cfg, jour, ajouterJours, dateDe, dateFr, nomJour, prochainJourEnvoi, dansFenetre, texteJours } from '../services/base.mjs'
 import { aValider, fileEnvoi, prospect, envoyesLe, prochaineEtape, NOM_ETAPE } from '../services/prospection.mjs'
 import { composer } from '../services/mail.mjs'
 import { zoneDeLaSemaine } from '../services/reglages.mjs'
@@ -26,7 +26,7 @@ export const EtatController = {
             aujourdhui: nomJour(jour()), zone: zoneDeLaSemaine() || 'aucune',
             occupe: app.occupe, avancement: app.avancement,
             erreur: app.veille ? `Ce PC est en veille : l'outil tourne sur le PC ${app.veille}.` : app.erreur,
-            envoyes: envoyesLe(etat), max: cfg.maxEmailsParJour, fenetre: dansFenetre(), fenetres: cfg.fenetres.map((f) => f.join(' - ')).join(' et '),
+            envoyes: envoyesLe(etat), max: cfg.maxEmailsParJour, fenetre: dansFenetre(), fenetres: cfg.fenetres.map((f) => f.join(' - ')).join(' et '), joursEnvoi: texteJours(cfg.joursEnvoi || []),
             prochainEnvoi: nomJour(prochainJourEnvoi()),
             aValider: aValider(etat).map(carte),
             file: fileEnvoi(etat).map(carte),

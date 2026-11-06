@@ -10,7 +10,7 @@ export function toast(texte, erreur = false) {
 }
 
 export async function action(bouton, f, succes) {
-    if (bouton) bouton.disabled = true
+    if (bouton) bouton.disabled = true, bouton.classList.add('charge')
     try {
         const r = await f()
         if (succes) toast(typeof succes === 'function' ? succes(r) : succes)
@@ -19,7 +19,7 @@ export async function action(bouton, f, succes) {
         toast(e.message, true)
         return null
     } finally {
-        if (bouton) bouton.disabled = false
+        if (bouton) bouton.disabled = false, bouton.classList.remove('charge')
     }
 }
 

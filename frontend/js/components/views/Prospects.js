@@ -17,7 +17,7 @@ export function rendreProspects() {
         el.dataset.monte = '1'
         el.innerHTML = `
         <div class="tete"><div><p class="label eyebrow">Suivi et résultats</p><h1 class="display display-l">Prospects</h1></div>
-            <p class="muted" id="lien-classeur">Le même tableau est dans ton Drive (dossier PROSPECTION).</p></div>
+            <p class="muted" id="lien-classeur">Le même tableau est dans ton dossier de données (Suivi prospection.xlsx).</p></div>
         <div class="grille g4 section" id="chiffres-tuiles"></div>
         <details class="section"><summary class="label eyebrow" style="cursor:pointer">Objectifs du plan et comparaison des zones</summary><div id="chiffres-detail" style="margin-top:1rem"></div></details>
         <div class="filtres"><input type="search" id="recherche" placeholder="Chercher une entreprise, une ville, un e-mail..."><select id="filtre-statut"><option value="">Tous les statuts</option></select><select id="filtre-zone"><option value="">Toutes les zones</option></select></div>

@@ -40,7 +40,21 @@ Une ligne par métier : nom (ce que Claude tape dans la recherche, ex. « Plombi
 | Recherches web par jour | 10 | Une recherche = un métier dans une ville, jusqu'à 6 entreprises avec e-mail. À baisser si ton abonnement Claude sature |
 | Réserve de prospects prêts | 30 | 1ers e-mails rédigés d'avance |
 | E-mails par jour au maximum | 20 | Toutes étapes confondues |
-| 1ers e-mails le mardi, mercredi, jeudi | 15, 0, 15 | Les relances passent avant, dans la limite du maximum |
+
+Le nombre de 1ers e-mails de chaque jour d'envoi se règle dans le Calendrier, ci-dessous.
+
+### Calendrier
+| Réglage | Par défaut | Effet |
+|---|---|---|
+| Jours de recherche | lundi à vendredi | Les jours où Claude cherche de nouveaux prospects |
+| Jours d'envoi | mardi, mercredi, jeudi | Les jours où le lot est préparé et envoyé (au moins un) |
+| 1ers e-mails par jour d'envoi | 15 mardi, 0 mercredi, 15 jeudi | Les relances passent avant, dans la limite du maximum par jour |
+| Créneaux d'envoi | 08:00 - 10:00 et 13:30 - 15:00 | Ajoute ou retire des créneaux ; le début avant la fin |
+| Relance 1, relance 2 | J+4, J+11 | Jours après le 1er e-mail (relance 1 : 1 à 30 ; relance 2 : après la 1, 60 au plus). Une relance due un jour sans envoi part au jour d'envoi suivant |
+| Écart entre deux e-mails | 2 à 4 minutes | Un écart au hasard entre le minimum et le maximum (1 à 60) |
+| Sauter les jours fériés | oui | Ni recherche ni envoi les jours fériés français |
+
+Clique sur **Enregistrer le calendrier** : c'est pris en compte tout de suite.
 
 ### Adresse d'envoi et serveur de la boîte pro
 Hébergeur ou fournisseur (modèle qui remplit les serveurs : Infomaniak, o2switch, OVHcloud, IONOS, Google Workspace, Microsoft 365, et pour une adresse perso Outlook.com / Hotmail, Yahoo, Orange, SFR, Free, La Poste, iCloud), nom affiché, adresse d'envoi, serveur d'envoi (SMTP) et son port (465 : chiffré dès la connexion ; 587 : STARTTLS, exigé), serveur de réception (IMAP). **Si tu changes d'hébergeur** : choisis-le, enregistre, retape le mot de passe (Comptes), et pense aux réglages SPF, DKIM et DMARC de ton domaine chez le nouvel hébergeur. Avec Gmail, mets aussi à jour « Envoyer en tant que » dans Gmail.
