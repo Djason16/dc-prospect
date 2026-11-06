@@ -1,5 +1,8 @@
 # Journal des versions
 
+## 1.1.1 (novembre 2026)
+- Correction : « Enregistrer le calendrier » et « Enregistrer » des volumes ne faisaient rien.
+
 ## 1.1.0 (novembre 2026)
 - Calendrier réglable (Réglages, Avancé, Calendrier) : jours de recherche, jours d'envoi et 1ers e-mails par jour, créneaux d'envoi, délais des relances, écart entre deux e-mails, jours fériés.
 - Écran de chargement au démarrage (attend que le moteur réponde), roue de chargement sur les boutons pendant une action et dans Réglages pendant le chargement.

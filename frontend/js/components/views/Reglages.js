@@ -258,12 +258,12 @@ export async function clicReglages(b, recharger) {
         let d
         if (k === 'zones') d = { zones: lireLignes('#zones') }
         if (k === 'secteurs') d = { secteurs: lireLignes('#metiers') }
-        if (k === 'volumes') { d = {}; $('[data-volume]').forEach((i) => (d[i.dataset.volume] = Number(i.value))) }
+        if (k === 'volumes') { d = {}; $$('[data-volume]').forEach((i) => (d[i.dataset.volume] = Number(i.value))) }
         if (k === 'calendrier') d = {
-            joursRecherche: $('[data-jour-recherche]').filter((i) => i.checked).map((i) => Number(i.dataset.jourRecherche)),
-            joursEnvoi: $('[data-jour-envoi]').filter((i) => i.checked).map((i) => Number(i.dataset.jourEnvoi)),
-            j0ParJour: Object.fromEntries($('[data-j0]').map((i) => [i.dataset.j0, Number(i.value)])),
-            fenetres: $('#creneaux .creneau').map((l) => [$('[data-c=debut]', l).value, $('[data-c=fin]', l).value]),
+            joursRecherche: $$('[data-jour-recherche]').filter((i) => i.checked).map((i) => Number(i.dataset.jourRecherche)),
+            joursEnvoi: $$('[data-jour-envoi]').filter((i) => i.checked).map((i) => Number(i.dataset.jourEnvoi)),
+            j0ParJour: Object.fromEntries($$('[data-j0]').map((i) => [i.dataset.j0, Number(i.value)])),
+            fenetres: $$('#creneaux .creneau').map((l) => [$('[data-c=debut]', l).value, $('[data-c=fin]', l).value]),
             relances: { r1: Number($('#cal-r1').value), r2: Number($('#cal-r2').value) },
             ecartMinutes: [Number($('#cal-emin').value), Number($('#cal-emax').value)],
             sauterFeries: $('#cal-feries').checked,

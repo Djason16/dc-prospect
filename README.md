@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/readme/badges/version.svg" alt="Version 1.1.0">
+  <img src="assets/readme/badges/version.svg" alt="Version 1.1.1">
   <img src="assets/readme/badges/windows.svg" alt="Windows 10 | 11">
   <img src="assets/readme/badges/claude.svg" alt="Claude Code">
   <img src="assets/readme/badges/prive.svg" alt="Projet privé">
@@ -79,4 +79,4 @@ dc-prospect/
 ```
 
 ## Version
-1.1.0 : voir [CHANGELOG.md](CHANGELOG.md).
+1.1.1 : voir [CHANGELOG.md](CHANGELOG.md).
