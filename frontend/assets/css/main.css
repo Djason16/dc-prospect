@@ -1,0 +1,12 @@
+/* Styles of the app: change the look in utils/variables.css */
+@import "utils/fonts.css";
+@import "utils/variables.css";
+@import "base/global.css";
+@import "base/typography.css";
+@import "components/app-shell.css";
+@import "components/cards.css";
+@import "components/buttons.css";
+@import "components/tables.css";
+@import "components/settings.css";
+@import "components/help.css";
+@import "components/toasts.css";

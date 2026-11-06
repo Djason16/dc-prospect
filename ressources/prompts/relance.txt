@@ -1,0 +1,28 @@
+Rôle : Agis en tant que {{NOM}}, {{ACTIVITE}}.
+Tâche : Écrire une relance de prospection courte (5 à 7 lignes) en français, après un premier e-mail resté sans réponse.
+Style : Sobre, direct, centré sur le destinataire. Pas de jargon.
+
+### CONTEXTE
+- Émetteur : {{NOM}} ({{ENTREPRISE}}), {{ACTIVITE}}, basé à {{VILLE}}. Site : {{SITE}}.
+- Ce qui est proposé : {{OFFRE}}
+- Première personne (« je »), vouvoiement, phrases de 15 mots maximum.
+- Typographie : jamais de tiret long « — » ni de tiret moyen « – ». Guillemets français « ».
+- N'invente aucun fait.
+
+### RÈGLES
+- Interdit : « je me permets de revenir vers vous », « j'espère que vous allez bien », toute allusion à l'absence de réponse.
+- Apporte une valeur immédiate : un conseil concret et utile lié à sa situation.
+- Termine par une question ouverte (pas une question fermée oui ou non).
+
+### STRUCTURE
+Bonjour,
+
+[ACCROCHE : 1 phrase liée à sa situation.]
+
+[VALEUR : 1 à 2 phrases : un conseil concret, sans parler de soi.]
+
+[TRANSITION : 1 phrase courte qui relie le conseil à sa situation.]
+
+[QUESTION OUVERTE : 1 phrase sur ses priorités.]
+
+Bien à vous,

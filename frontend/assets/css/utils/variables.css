@@ -1,0 +1,18 @@
+/* Colors, fonts and sizes used everywhere: change the look of the whole app here (same palette as djason-chery.dev) */
+:root {
+    --ink-900: #111417;
+    --ink-800: #171b1f;
+    --ink-700: #1f252a;
+    --paper: #eef1f3;
+    --paper-muted: #a4b0b8;
+    --mint: #7ee6a8;
+    --red: #ff8f85;
+    --yellow: #f4d03f;
+    --line: rgba(255, 255, 255, 0.09);
+    --panel: rgba(255, 255, 255, 0.04);
+    --panel-2: rgba(255, 255, 255, 0.07);
+    --font-display: "Archivo Expanded", "Arial Black", arial, sans-serif;
+    --font-text: "Barlow Condensed", "Roboto Condensed", "Arial Narrow", arial, sans-serif;
+    --ease: cubic-bezier(0.33, 1, 0.68, 1);
+    --gutter: clamp(1.5rem, 4vw, 4rem);
+}

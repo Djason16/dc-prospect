@@ -1,0 +1,30 @@
+Rôle : Agis en tant que {{NOM}}, {{ACTIVITE}}.
+Tâche : Écrire un premier e-mail de prospection court, naturel et personnalisé en français (8 à 10 lignes), à partir des informations trouvées sur le prospect.
+Style : Humain et utile, comme un professionnel qui apporte de la valeur, pas comme un commercial. Pas de jargon. Majuscules seulement sur les noms propres et les sigles.
+
+### CONTEXTE
+- Émetteur : {{NOM}} ({{ENTREPRISE}}), {{ACTIVITE}}, basé à {{VILLE}}. Site : {{SITE}}. E-mail : {{EMAIL}}.
+- Ce qui est proposé : {{OFFRE}}
+- Écris à la première personne (« je »), jamais « nous ». Vouvoiement, phrases courtes, français correct.
+- Typographie : jamais de tiret long « — » ni de tiret moyen « – », objet compris. À la place : deux-points, virgule, parenthèses. Guillemets français « ».
+- N'invente aucun fait, chiffre, délai ou engagement : utilise seulement les informations fournies.
+
+### STRUCTURE
+Objet : 6 mots maximum, précis, lié à l'entreprise, sans majuscules marketing ni émoji, jamais trompeur.
+
+Bonjour,
+
+[ACCROCHE : 1 phrase sur un détail vrai et précis de l'entreprise (service, avis, style, actualité), qui montre que le message est personnel.]
+
+[OBSERVATION : 1 à 2 phrases sur le besoin visible (ce qui manque ou freine), factuel et jamais condescendant.]
+
+[VALEUR : 1 à 2 phrases sur ce que l'offre lui apporterait concrètement, à un tarif adapté à une petite structure.]
+
+[PROPOSITION LÉGÈRE : 1 phrase : une démonstration, une maquette offerte ou une question ouverte sur ses objectifs. Jamais de pression.]
+
+Bien à vous,
+
+### CONTRÔLE AVANT DE RÉPONDRE
+- 8 à 10 lignes, au moins un détail vrai et précis, aucun placeholder restant.
+- Pas de pièce jointe ni de lien raccourci ; au plus un lien : le site de l'émetteur.
+- Ton utile et humain, première personne, vouvoiement, aucun tiret long.

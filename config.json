@@ -1,0 +1,136 @@
+{
+  "dossierDrive": "",
+  "dossierPrompts": "",
+  "signature": "",
+  "expediteur": {
+    "nom": "",
+    "adresse": ""
+  },
+  "smtp": {
+    "hote": "",
+    "port": 465
+  },
+  "imap": {
+    "hote": "",
+    "port": 993
+  },
+  "profil": {
+    "prenom": "",
+    "nom": "",
+    "entreprise": "",
+    "activite": "",
+    "offre": "",
+    "siteWeb": "",
+    "ville": "",
+    "telephone": "",
+    "titre": "",
+    "besoin": "",
+    "signaturePrincipale": "",
+    "signatureSecondaire": "",
+    "nomSignatureSecondaire": ""
+  },
+  "port": 4747,
+  "modeleRecherche": "haiku",
+  "modeleRedaction": "sonnet",
+  "rechercheEnParallele": 2,
+  "maxRecherchesParJour": 10,
+  "reserveProspectsPrets": 30,
+  "j0ParJour": {
+    "2": 15,
+    "4": 15
+  },
+  "joursEnvoi": [
+    2,
+    3,
+    4
+  ],
+  "maxEmailsParJour": 20,
+  "fenetres": [
+    [
+      "08:00",
+      "10:00"
+    ],
+    [
+      "13:30",
+      "15:00"
+    ]
+  ],
+  "ecartMinutes": [
+    2,
+    4
+  ],
+  "relances": {
+    "r1": 4,
+    "r2": 11
+  },
+  "oublierApresJours": 365,
+  "zones": [],
+  "secteurs": [
+    {
+      "nom": "Coiffure",
+      "naf": [
+        "96.02A"
+      ]
+    },
+    {
+      "nom": "Institut de beauté",
+      "naf": [
+        "96.02B",
+        "96.04Z"
+      ]
+    },
+    {
+      "nom": "Restaurant",
+      "naf": [
+        "56.10A",
+        "56.10C"
+      ]
+    },
+    {
+      "nom": "Garage",
+      "naf": [
+        "45.20A",
+        "45.20B"
+      ]
+    },
+    {
+      "nom": "Artisan du bâtiment",
+      "naf": [
+        "43.21A",
+        "43.22A",
+        "43.32A",
+        "43.34Z",
+        "43.99C"
+      ]
+    },
+    {
+      "nom": "Paramédical",
+      "naf": [
+        "86.90E",
+        "86.90F"
+      ]
+    },
+    {
+      "nom": "Commerce de proximité",
+      "naf": [
+        "47.76Z",
+        "10.71C",
+        "47.22Z",
+        "47.29Z"
+      ]
+    },
+    {
+      "nom": "Coach et sport",
+      "naf": [
+        "85.51Z",
+        "93.13Z"
+      ]
+    },
+    {
+      "nom": "Club sportif",
+      "naf": [
+        "93.12Z"
+      ]
+    }
+  ]
+}

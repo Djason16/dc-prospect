@@ -1,0 +1,9 @@
+/* Wide titles (Archivo Expanded), labels in spaced capitals, texts (Barlow Condensed) */
+.display { margin: 0; font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: -0.01em; line-height: 1; }
+.display-l { font-size: clamp(1.8rem, 1rem + 2.6vw, 3.2rem); }
+.display-m { font-size: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem); line-height: 1.1; }
+.display-s { font-size: 1.05rem; line-height: 1.15; }
+.label { margin: 0; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--paper-muted); }
+.eyebrow { color: var(--mint); }
+.muted { color: var(--paper-muted); }
+.petit { font-size: 0.95rem; }

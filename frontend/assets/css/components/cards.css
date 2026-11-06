@@ -1,0 +1,19 @@
+/* Tiles, cards, labels, banners */
+.tuile { background: var(--panel); border: 1px solid var(--line); padding: 1.3rem 1.4rem; }
+.tuile .chiffre { font-family: var(--font-display); font-size: 2.1rem; font-weight: 600; line-height: 1.1; margin-top: 0.6rem; }
+.tuile .chiffre small { font-size: 0.95rem; color: var(--paper-muted); }
+.tuile.accent { background: linear-gradient(160deg, rgba(126, 230, 168, 0.16), rgba(126, 230, 168, 0.03)); border-color: rgba(126, 230, 168, 0.35); }
+.carte { background: var(--panel); border: 1px solid var(--line); padding: 1.5rem; margin-bottom: 1rem; transition: border-color 0.3s var(--ease); }
+.carte:hover { border-color: rgba(255, 255, 255, 0.16); }
+.carte .haut { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; flex-wrap: wrap; }
+.carte .meta { margin: 0.5rem 0 1rem; color: var(--paper-muted); font-size: 0.98rem; }
+.carte .meta a { color: var(--paper); }
+.carte blockquote { margin: 0.8rem 0; padding: 0.2rem 0 0.2rem 1rem; border-left: 2px solid var(--mint); color: var(--paper); font-size: 1.1rem; }
+.etiquette { display: inline-block; margin-right: 0.6rem; padding: 0.25rem 0.6rem; background: var(--mint); color: var(--ink-900); font: 600 0.7rem/1.2 var(--font-text); letter-spacing: 0.18em; text-transform: uppercase; vertical-align: middle; }
+.etiquette.jaune { background: var(--yellow); }
+.etiquette.grise { background: var(--panel-2); color: var(--paper); }
+.bandeau { display: flex; gap: 1rem; align-items: center; justify-content: space-between; padding: 1rem 1.3rem; margin-bottom: 1.6rem; border: 1px solid rgba(126, 230, 168, 0.35); background: rgba(126, 230, 168, 0.08); }
+.bandeau.erreur { border-color: rgba(255, 143, 133, 0.45); background: rgba(255, 143, 133, 0.08); }
+.bandeau.info { border-color: var(--line); background: var(--panel); }
+.vide { padding: 1.4rem; border: 1px dashed var(--line); color: var(--paper-muted); }
+.pb { margin-top: 0.7rem; color: var(--red); }

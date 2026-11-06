@@ -1,0 +1,4 @@
+/* Small messages at the bottom right */
+#toasts { position: fixed; right: 1.5rem; bottom: 1.5rem; z-index: 50; display: flex; flex-direction: column; gap: 0.6rem; }
+.toast { max-width: 26rem; padding: 0.9rem 1.2rem; background: var(--ink-700); border-left: 3px solid var(--mint); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); animation: entree 0.35s var(--ease); }
+.toast.erreur { border-left-color: var(--red); }

@@ -1,0 +1,10 @@
+# Dependencies and builds
+node_modules/
+dist/
+
+# Never in Git: secrets, local settings, logs, test data
+.env
+*.secret
+local.json
+*.log
+Données/

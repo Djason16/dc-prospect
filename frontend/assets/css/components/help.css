@@ -1,0 +1,6 @@
+/* Help page */
+.aide h3 { margin: 2.2rem 0 0.8rem; }
+.aide p, .aide li { max-width: 52rem; }
+.aide details { border-bottom: 1px solid var(--line); padding: 0.9rem 0; }
+.aide summary { cursor: pointer; font-weight: 600; font-size: 1.12rem; }
+.aide summary::marker { color: var(--mint); }

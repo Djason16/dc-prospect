@@ -1,0 +1,30 @@
+/* Buttons and fields */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; min-height: 46px; padding: 0 1.4rem; border: 0;
+    background: var(--panel-2); color: var(--paper); cursor: pointer; text-decoration: none;
+    font: 600 0.8rem/1 var(--font-text); letter-spacing: 0.18em; text-transform: uppercase;
+    transition: background-color 0.35s var(--ease), color 0.35s var(--ease);
+}
+.btn:hover { background: var(--paper); color: var(--ink-900); }
+.btn.primaire { background: var(--mint); color: var(--ink-900); }
+.btn.primaire:hover { background: var(--paper); }
+.btn.danger { background: none; color: var(--red); box-shadow: inset 0 0 0 1px rgba(255, 143, 133, 0.35); }
+.btn.danger:hover { background: var(--red); color: var(--ink-900); }
+.btn.lien { background: none; padding: 0 0.4rem; min-height: 36px; color: var(--paper-muted); }
+.btn.lien:hover { color: var(--mint); background: none; }
+.btn.petit { min-height: 38px; padding: 0 1rem; font-size: 0.72rem; }
+.btn:disabled { opacity: 0.45; cursor: wait; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.1rem; }
+label.champ { display: block; margin: 0.9rem 0 0.4rem; }
+input[type=text], input[type=password], input[type=number], input[type=search], textarea, select {
+    width: 100%; padding: 0.8rem 0.9rem; border: 1px solid var(--line); background: var(--ink-800); color: var(--paper);
+    font: 400 1.05rem/1.5 var(--font-text); border-radius: 0;
+}
+textarea { min-height: 250px; resize: vertical; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--mint); }
+input[readonly] { color: var(--paper-muted); }
+.interrupteur { display: inline-flex; align-items: center; gap: 0.7rem; cursor: pointer; user-select: none; }
+.interrupteur input { appearance: none; width: 44px; height: 24px; margin: 0; border-radius: 999px; background: var(--panel-2); position: relative; cursor: pointer; transition: background 0.3s var(--ease); }
+.interrupteur input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--paper-muted); transition: transform 0.3s var(--ease), background 0.3s; }
+.interrupteur input:checked { background: rgba(126, 230, 168, 0.35); }
+.interrupteur input:checked::after { transform: translateX(20px); background: var(--mint); }
