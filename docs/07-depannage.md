@@ -1,6 +1,6 @@
 # 7. Dépannage
 
-D'abord : Réglages, Comptes, **Tout vérifier**. Puis les journaux : Réglages, Avancé, Fichiers, **Journaux** (`%APPDATA%\prospection-auto\journaux`, un fichier par jour).
+D'abord : Réglages, Comptes, **Tout vérifier**. Puis les journaux : Réglages, Avancé, Fichiers, **Journaux** (`%APPDATA%\prospection-auto\logs`, un fichier par jour).
 
 | Message ou problème | Cause | Quoi faire |
 |---|---|---|
@@ -16,7 +16,7 @@ D'abord : Réglages, Comptes, **Tout vérifier**. Puis les journaux : Réglages,
 | « Claude Code n'est pas installé » | Claude Code absent | Bouton « Installer Claude Code », puis Actualiser |
 | Peu de prospects trouvés | Peu d'entreprises publient un e-mail dans ces métiers | Ajoute des métiers ou des zones ; regarde le rendement par métier (Avancé) |
 | « Ce PC est en veille : l'outil tourne sur le PC ... » | Un autre PC utilise le même dossier de données | Valide depuis ce PC-là, ou quitte DC Prospect sur l'autre PC (reprise en 6 minutes au plus) |
-| « Le port 4747 est déjà pris » | Une autre copie tourne (par exemple `npm run moteur`) | Ferme-la, puis relance DC Prospect |
+| « Le port 4747 est déjà pris » | Une autre copie tourne (par exemple `npm run engine`) | Ferme-la, puis relance DC Prospect |
 | Rien ne part alors que des e-mails sont validés | Hors créneau, jour non envoyé, maximum atteint, ou erreur d'envoi | Vérifie Réglages, Avancé, Calendrier (par défaut mardi à jeudi, 8 h - 10 h et 13 h 30 - 15 h) ; regarde les bandeaux et le journal |
 | Le tableau Excel ne se met pas à jour | Il est ouvert dans Excel | Ferme-le ; il est refait au changement suivant |
 | « Connexion Google expirée » | Jeton révoqué, ou application Google restée en mode test (7 jours) | Publie l'écran de consentement (voir [4. Réglages](04-reglages.md)), puis reconnecte Google |

@@ -1,5 +1,10 @@
 # Journal des versions
 
+## 1.2.0 (novembre 2026)
+- Tout le code passe en anglais : noms de fichiers, fonctions, variables, classes, routes de l'API, outils du MCP (`send_email`, `prospecting_status`, `read_inbox`) et clés des données enregistrées. Les textes de l'application restent en français.
+- Au premier lancement, les données d'une version plus ancienne sont converties une seule fois (sauvegarde gardée à côté) : installe la 1.2.0 sur tous les PC qui partagent le dossier de données.
+- Correction : l'objet des e-mails commence toujours par une majuscule (consigne de Claude corrigée, première lettre mise en majuscule à la préparation, à la modification et à l'envoi ; « Re: » des relances compris).
+
 ## 1.1.1 (novembre 2026)
 - Correction : « Enregistrer le calendrier » et « Enregistrer » des volumes ne faisaient rien.
 

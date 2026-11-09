@@ -1,47 +1,48 @@
 // Frame of the app: top bar (logo, tabs, status, "Préparer") and the containers of the views
 import { $, $$ } from '../../utils/dom.js'
-import { store } from '../../stores/etat.js'
+import { store } from '../../stores/state.js'
 import { IN_APP } from '../../config.js'
 
-export const VUES = [
-    ['aujourdhui', 'Aujourd\'hui'],
+// [id, label shown]
+export const VIEWS = [
+    ['today', 'Aujourd\'hui'],
     ['prospects', 'Prospects'],
-    ['reglages', 'Réglages'],
-    ['aide', 'Aide'],
+    ['settings', 'Réglages'],
+    ['help', 'Aide'],
 ]
 
-export function monterAppShell() {
-    if (IN_APP) document.body.classList.add('app')
+export function mountAppShell() {
+    if (IN_APP) document.body.classList.add('in-app')
     $('#app').innerHTML = `
-    <header class="barre">
-        <img src="/assets/images/icone.png" alt="" style="height:32px;border-radius:50%">
+    <header class="topbar">
+        <img src="/assets/images/icon.png" alt="" style="height:32px;border-radius:50%">
         <span class="display display-s" style="-webkit-app-region:drag;font-size:.95rem;letter-spacing:.04em">DC Prospect</span>
-        <nav aria-label="Navigation">${VUES.map(([id, nom], i) => `<button class="onglet${i ? '' : ' actif'}" data-vue="${id}">${nom}${id === 'aujourdhui' ? ' <span class="bulle" id="bulle-jour" hidden></span>' : ''}</button>`).join('')}</nav>
-        <div class="droite">
-            <span class="pastille" id="pastille">Prêt</span>
-            <button class="btn petit" id="preparer" title="Lance tout de suite la recherche et la préparation du jour">Préparer</button>
+        <nav aria-label="Navigation">${VIEWS.map(([id, name], i) => `<button class="tab${i ? '' : ' active'}" data-view="${id}">${name}${id === 'today' ? ' <span class="badge" id="today-badge" hidden></span>' : ''}</button>`).join('')}</nav>
+        <div class="right">
+            <span class="status-dot" id="status">Prêt</span>
+            <button class="btn small" id="prepare" title="Lance tout de suite la recherche et la préparation du jour">Préparer</button>
         </div>
     </header>
-    <main>${VUES.map(([id], i) => `<section class="vue${i ? '' : ' active'}" id="vue-${id}"></section>`).join('')}</main>
+    <main>${VIEWS.map(([id], i) => `<section class="view${i ? '' : ' active'}" id="view-${id}"></section>`).join('')}</main>
     <div id="toasts" aria-live="polite"></div>`
 }
 
 // Status dot, counter and button, from the state of the day
-export function rendreAppShell() {
-    const E = store.E
-    const p = $('#pastille')
-    if (!E) { p.className = 'pastille ko'; p.textContent = 'Arrêté'; return }
-    p.className = 'pastille' + (E.occupe ? ' attente' : E.erreur ? ' ko' : '')
-    p.textContent = E.occupe ? 'Préparation' : E.erreur ? 'À vérifier' : E.sante?.veille ? 'Veille' : 'Prêt'
-    $('#preparer').disabled = E.occupe
-    const n = E.aValider.length + E.reponses.length
-    $('#bulle-jour').hidden = !n
-    $('#bulle-jour').textContent = n
+export function renderAppShell() {
+    const day = store.day
+    const status = $('#status')
+    if (!day) { status.className = 'status-dot error'; status.textContent = 'Arrêté'; return }
+    status.className = 'status-dot' + (day.busy ? ' pending' : day.error ? ' error' : '')
+    status.textContent = day.busy ? 'Préparation' : day.error ? 'À vérifier' : day.health?.standby ? 'Veille' : 'Prêt'
+    $('#prepare').disabled = day.busy
+    const n = day.toApprove.length + day.replies.length
+    $('#today-badge').hidden = !n
+    $('#today-badge').textContent = n
 }
 
-export function afficherVue(v) {
-    store.vue = v
-    $$('.onglet').forEach((b) => b.classList.toggle('actif', b.dataset.vue === v))
-    $$('.vue').forEach((s) => s.classList.toggle('active', s.id === 'vue-' + v))
+export function showView(view) {
+    store.view = view
+    $$('.tab').forEach((b) => b.classList.toggle('active', b.dataset.view === view))
+    $$('.view').forEach((s) => s.classList.toggle('active', s.id === 'view-' + view))
     window.scrollTo(0, 0)
 }

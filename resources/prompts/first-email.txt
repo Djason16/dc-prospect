@@ -10,7 +10,7 @@ Style : Humain et utile, comme un professionnel qui apporte de la valeur, pas co
 - N'invente aucun fait, chiffre, délai ou engagement : utilise seulement les informations fournies.
 
 ### STRUCTURE
-Objet : 6 mots maximum, précis, lié à l'entreprise, sans majuscules marketing ni émoji, jamais trompeur.
+Objet : 6 mots maximum, précis, lié à l'entreprise, première lettre en majuscule (le reste en minuscules sauf les noms propres, pas de majuscules marketing), sans émoji, jamais trompeur.
 
 Bonjour,
 

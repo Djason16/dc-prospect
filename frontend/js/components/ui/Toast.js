@@ -1,34 +1,34 @@
 // Small message at the bottom right, and the "button action" helper (disables the button, shows the result)
 import { $ } from '../../utils/dom.js'
 
-export function toast(texte, erreur = false) {
+export function toast(text, isError = false) {
     const t = document.createElement('div')
-    t.className = 'toast' + (erreur ? ' erreur' : '')
-    t.textContent = texte
+    t.className = 'toast' + (isError ? ' error' : '')
+    t.textContent = text
     $('#toasts').append(t)
-    setTimeout(() => t.remove(), erreur ? 9000 : 5000)
+    setTimeout(() => t.remove(), isError ? 9000 : 5000)
 }
 
-export async function action(bouton, f, succes) {
-    if (bouton) bouton.disabled = true, bouton.classList.add('charge')
+export async function runAction(button, work, successMessage) {
+    if (button) button.disabled = true, button.classList.add('loading')
     try {
-        const r = await f()
-        if (succes) toast(typeof succes === 'function' ? succes(r) : succes)
+        const r = await work()
+        if (successMessage) toast(typeof successMessage === 'function' ? successMessage(r) : successMessage)
         return r
     } catch (e) {
         toast(e.message, true)
         return null
     } finally {
-        if (bouton) bouton.disabled = false, bouton.classList.remove('charge')
+        if (button) button.disabled = false, button.classList.remove('loading')
     }
 }
 
 // Second click needed (no browser dialog, they block the app)
-export function confirmer(bouton, texte = 'Confirmer') {
-    if (bouton.dataset.sur) return true
-    bouton.dataset.sur = '1'
-    const avant = bouton.textContent
-    bouton.textContent = texte
-    setTimeout(() => { delete bouton.dataset.sur; bouton.textContent = avant }, 4000)
+export function confirmClick(button, text = 'Confirmer') {
+    if (button.dataset.armed) return true
+    button.dataset.armed = '1'
+    const before = button.textContent
+    button.textContent = text
+    setTimeout(() => { delete button.dataset.armed; button.textContent = before }, 4000)
     return false
 }

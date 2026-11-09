@@ -1,59 +1,59 @@
 {
-  "dossierDrive": "",
-  "dossierPrompts": "",
+  "dataFolder": "",
+  "promptsFolder": "",
   "signature": "",
-  "expediteur": {
-    "nom": "",
-    "adresse": ""
+  "sender": {
+    "name": "",
+    "address": ""
   },
   "smtp": {
-    "hote": "",
+    "host": "",
     "port": 465
   },
   "imap": {
-    "hote": "",
+    "host": "",
     "port": 993
   },
-  "profil": {
-    "prenom": "",
-    "nom": "",
-    "entreprise": "",
-    "activite": "",
-    "offre": "",
-    "siteWeb": "",
-    "ville": "",
-    "telephone": "",
-    "titre": "",
-    "besoin": "",
-    "signaturePrincipale": "",
-    "signatureSecondaire": "",
-    "nomSignatureSecondaire": ""
+  "profile": {
+    "firstName": "",
+    "lastName": "",
+    "company": "",
+    "activity": "",
+    "offer": "",
+    "website": "",
+    "city": "",
+    "phone": "",
+    "title": "",
+    "need": "",
+    "mainSignature": "",
+    "secondSignature": "",
+    "secondSignatureName": ""
   },
   "port": 4747,
-  "modeleRecherche": "haiku",
-  "modeleRedaction": "sonnet",
-  "rechercheEnParallele": 2,
-  "maxRecherchesParJour": 10,
-  "reserveProspectsPrets": 30,
-  "j0ParJour": {
+  "searchModel": "haiku",
+  "writingModel": "sonnet",
+  "parallelSearches": 2,
+  "maxSearchesPerDay": 10,
+  "readyReserve": 30,
+  "firstEmailsPerDay": {
     "2": 15,
     "4": 15
   },
-  "joursEnvoi": [
+  "sendDays": [
     2,
     3,
     4
   ],
-  "joursRecherche": [
+  "searchDays": [
     1,
     2,
     3,
     4,
     5
   ],
-  "sauterFeries": true,
-  "maxEmailsParJour": 20,
-  "fenetres": [
+  "skipHolidays": true,
+  "maxEmailsPerDay": 20,
+  "sendWindows": [
     [
       "08:00",
       "10:00"
@@ -63,46 +63,46 @@
       "15:00"
     ]
   ],
-  "ecartMinutes": [
+  "gapMinutes": [
     2,
     4
   ],
-  "relances": {
-    "r1": 4,
-    "r2": 11
+  "followUpDays": {
+    "first": 4,
+    "second": 11
   },
-  "oublierApresJours": 365,
+  "forgetAfterDays": 365,
   "zones": [],
-  "secteurs": [
+  "trades": [
     {
-      "nom": "Coiffure",
+      "name": "Coiffure",
       "naf": [
         "96.02A"
       ]
     },
     {
-      "nom": "Institut de beauté",
+      "name": "Institut de beauté",
       "naf": [
         "96.02B",
         "96.04Z"
       ]
     },
     {
-      "nom": "Restaurant",
+      "name": "Restaurant",
       "naf": [
         "56.10A",
         "56.10C"
       ]
     },
     {
-      "nom": "Garage",
+      "name": "Garage",
       "naf": [
         "45.20A",
         "45.20B"
       ]
     },
     {
-      "nom": "Artisan du bâtiment",
+      "name": "Artisan du bâtiment",
       "naf": [
         "43.21A",
         "43.22A",
@@ -112,14 +112,14 @@
       ]
     },
     {
-      "nom": "Paramédical",
+      "name": "Paramédical",
       "naf": [
         "86.90E",
         "86.90F"
       ]
     },
     {
-      "nom": "Commerce de proximité",
+      "name": "Commerce de proximité",
       "naf": [
         "47.76Z",
         "10.71C",
@@ -128,14 +128,14 @@
       ]
     },
     {
-      "nom": "Coach et sport",
+      "name": "Coach et sport",
       "naf": [
         "85.51Z",
         "93.13Z"
       ]
     },
     {
-      "nom": "Club sportif",
+      "name": "Club sportif",
       "naf": [
         "93.12Z"
       ]

@@ -1,20 +1,20 @@
-// Help: the documentation of DC Prospect, for me or for someone who takes over the tool
+// Help: the documentation of DC Prospect, for me or for someone who takes over the tool (French: read by the user)
 import { $ } from '../../utils/dom.js'
 
-export function rendreAide() {
-    const el = $('#vue-aide')
-    if (el.dataset.monte) return
-    el.dataset.monte = '1'
-    el.classList.add('aide')
+export function renderHelp() {
+    const el = $('#view-help')
+    if (el.dataset.mounted) return
+    el.dataset.mounted = '1'
+    el.classList.add('help')
     el.innerHTML = `
-    <div class="tete"><div><p class="label eyebrow">Documentation</p><h1 class="display display-l">Aide</h1></div>
+    <div class="page-head"><div><p class="label eyebrow">Documentation</p><h1 class="display display-l">Aide</h1></div>
         <p class="muted">Tout ce qu'il faut savoir, pour toi ou pour quelqu'un qui reprend l'outil.</p></div>
 
     <h3 class="display display-m">En deux mots</h3>
     <p>DC Prospect fait ta prospection à ta place. Les jours de recherche, Claude cherche sur le web de petites entreprises de tes métiers dans la zone de la semaine (« plombier + ville »...), garde celles qui publient un e-mail sur leur propre site et dont le site montre un besoin, vérifie l'e-mail et l'entreprise (registre officiel), puis rédige le premier e-mail en ton nom (ton profil). Tu valides. DC Prospect envoie depuis ton adresse, relance (J+4 et J+11 par défaut), lit les réponses, retire les STOP et tient le tableau de suivi et les rapports dans ton Drive.</p>
 
     <h3 class="display display-m">Ta routine (10 minutes)</h3>
-    <ol class="etapes">
+    <ol class="steps">
         <li><strong>Les jours d'envoi</strong> (mardi, mercredi et jeudi par défaut), DC Prospect s'ouvre tout seul dès que le PC est allumé (notification Windows) avec les e-mails du jour.</li>
         <li><strong>Aujourd'hui</strong> : relis, corrige si besoin, clique sur <em>Valider</em> ou <em>Tout valider</em>. Ils partent tout seuls au prochain créneau (8 h - 10 h ou 13 h 30 - 15 h par défaut).</li>
         <li><strong>Réponses</strong> : réponds depuis ta messagerie, puis clique sur ce qui s'est passé (appel prévu, proposition, client, pas intéressé).</li>
@@ -22,7 +22,7 @@ export function rendreAide() {
     </ol>
 
     <h3 class="display display-m">Installer sur un autre PC</h3>
-    <ol class="etapes">
+    <ol class="steps">
         <li>Double-clique sur <code>DC-Prospect-Setup.exe</code> (par exemple dans le sous-dossier <code>Installation</code> de ton dossier de données). Si Windows affiche « Windows a protégé votre ordinateur » : <em>Informations complémentaires</em>, puis <em>Exécuter quand même</em> (application non signée).</li>
         <li>Sur l'écran d'accueil, la mise en route te guide en 3 étapes : ton profil, ta zone, puis Claude et ton Gmail (ou ta boîte pro). Si tes données sont dans un dossier Google Drive, choisis le même dossier sur l'autre PC (Réglages, Fichiers) : profil, zones et prospects sont alors partagés.</li>
         <li>Un seul PC travaille à la fois : si deux sont allumés, le second se met en veille tout seul.</li>
@@ -39,6 +39,6 @@ export function rendreAide() {
     <details><summary>Et si Claude se trompe dans un e-mail ?</summary><p>Tu relis tout avant l'envoi (bouton <em>Voir comme le client</em> pour l'aperçu avec la signature). La validation est bloquée si le texte contient un tiret long, « nous », un crochet oublié ou une signature tapée. Ce que Claude lit sur les sites est traité comme une donnée, jamais comme une consigne.</p></details>
     <details><summary>Comment mettre mes données dans Google Drive ?</summary><p>DC Prospect n'a besoin d'aucun cloud : par défaut, tout est dans <code>Documents\\DC Prospect</code> sur ce PC. Pour une sauvegarde et pour retrouver tes données sur un autre PC : installe Google Drive pour ordinateur, puis Réglages, Avancé, Fichiers et outils, <em>Changer de dossier</em>, et choisis un dossier dans ton Drive (par exemple <code>G:\\Mon Drive\\DC Prospect</code>). Google Drive le synchronise tout seul. Ça marche pareil avec OneDrive ou Dropbox. Les mots de passe restent sur chaque PC.</p></details>
     <details><summary>Google Sheets et Google Docs, c'est obligatoire ?</summary><p>Non. Le tableau de suivi (Excel) et les rapports sont déjà dans ton Drive. Pour en faire un vrai Google Sheets et des Google Docs, il faut une fois un « fichier client » Google : console.cloud.google.com, projet « DC Prospect », activer les API Google Sheets et Google Drive, écran de consentement (Externe, ton adresse en utilisateur test, puis Publier), Identifiants, ID client OAuth de type « Application de bureau », télécharger le JSON. Puis Réglages, Avancé : <em>Importer le fichier client</em> et <em>Se connecter à Google</em> (« application non validée » est normal pour un outil perso).</p></details>
-    <details><summary>Le MCP « contact-mail », c'est quoi ?</summary><p>Dans Claude Code, il permet d'envoyer un e-mail depuis ton adresse pro avec ta signature (<code>envoyer_email</code>), de lire la boîte et l'état de la prospection. Claude te montre toujours le texte et attend ton accord. DC Prospect le déclare tout seul.</p></details>
+    <details><summary>Le MCP « contact-mail », c'est quoi ?</summary><p>Dans Claude Code, il permet d'envoyer un e-mail depuis ton adresse pro avec ta signature (<code>send_email</code>), de lire la boîte et l'état de la prospection. Claude te montre toujours le texte et attend ton accord. DC Prospect le déclare tout seul.</p></details>
     <details><summary>Où sont les fichiers ?</summary><p>Données, tableau et rapports : le dossier choisi dans Réglages, Fichiers (par défaut <code>Documents\\DC Prospect</code>). Comptes (chiffrés par Windows) et journaux : <code>%APPDATA%\\prospection-auto</code>.</p></details>`
 }

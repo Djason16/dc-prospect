@@ -1,16 +1,16 @@
 {
   "name": "dc-prospect",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "private": true,
   "description": "DC Prospect: Windows app that runs a prospecting plan for any freelancer or small business (leads, e-mails, follow-ups, reports)",
   "type": "module",
   "scripts": {
     "start": "electron .",
-    "moteur": "node backend/run.mjs",
+    "engine": "node backend/run.mjs",
     "mcp": "node backend/mcp-server.mjs",
-    "tester": "node backend/tester.mjs",
+    "check": "node backend/check.mjs",
     "build": "electron-builder --win nsis",
-    "publier": "pwsh -NoProfile -File scripts/publier.ps1"
+    "publish": "pwsh -NoProfile -File scripts/publish.ps1"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
@@ -39,7 +39,7 @@
       "electron/**",
       "backend/**",
       "frontend/**",
-      "ressources/**",
+      "resources/**",
       "config.json",
       "package.json"
     ],

@@ -14,8 +14,8 @@ Tu restes responsable de tes envois : relis chaque e-mail avant de le valider.
 ## Où sont les fichiers
 | Où | Quoi |
 |---|---|
-| Dossier de données (par défaut `Documents\DC Prospect`, ou celui choisi dans Réglages) | `Données\prospects.json` (prospects, journal), `Données\reglages.json` (profil, zones, métiers, volumes, serveur), `Données\verrou.json` (PC actif), `Données\envois-mcp.jsonl`, `Suivi prospection.xlsx`, `Rapports\`, `Installation\` |
-| `%APPDATA%\prospection-auto` | `*.secret` (mots de passe et connexion Google, chiffrés), `local.json` (réglages de ce PC), `google.json` (identifiants des fichiers Google, sans secret), `consommation-claude.json`, `journaux\` |
+| Dossier de données (par défaut `Documents\DC Prospect`, ou celui choisi dans Réglages) | `Données\prospects.json` (prospects, journal), `Données\settings.json` (profil, zones, métiers, volumes, serveur), `Données\lock.json` (PC actif), `Données\mcp-sends.jsonl`, `Suivi prospection.xlsx`, `Rapports\`, `Installation\` |
+| `%APPDATA%\prospection-auto` | `*.secret` (mots de passe et connexion Google, chiffrés), `local.json` (réglages de ce PC), `google.json` (identifiants des fichiers Google, sans secret), `claude-usage.json`, `logs\` (journaux) |
 | `%LOCALAPPDATA%\Programs\dc-prospect` | L'application installée |
 
 Ne modifie pas `Données\*.json` à la main pendant que l'application tourne.
@@ -30,14 +30,14 @@ Ne modifie pas `Données\*.json` à la main pendant que l'application tourne.
 L'interface est servie par le moteur sur `http://localhost:4747`, **accessible depuis ce PC seulement** (adresse 127.0.0.1, en-tête `Host` vérifié). Toute modification exige l'en-tête `X-Prospection: 1`, qu'une page d'un autre site ne peut pas envoyer sans que le navigateur demande d'abord la permission : un site malveillant ne peut pas valider ou envoyer à ta place. Les fichiers servis sont limités au dossier `frontend`.
 
 ## Plusieurs PC : le verrou
-Le PC actif écrit chaque minute `Données\verrou.json` (nom du PC, heure). Un autre PC qui voit un verrou de moins de 6 minutes se met **en veille** : il affiche les données mais ne cherche pas, n'envoie pas et refuse les validations. Quand le PC actif s'éteint ou quitte DC Prospect, l'autre reprend la main.
+Le PC actif écrit chaque minute `Données\lock.json` (nom du PC, heure). Un autre PC qui voit un verrou de moins de 6 minutes se met **en veille** : il affiche les données mais ne cherche pas, n'envoie pas et refuse les validations. Quand le PC actif s'éteint ou quitte DC Prospect, l'autre reprend la main.
 
 ## Le MCP « contact-mail » (Claude Code)
 DC Prospect déclare tout seul un serveur MCP dans Claude Code (portée utilisateur), lancé par `DC Prospect.exe` (`ELECTRON_RUN_AS_NODE=1`), sans Node.js :
 | Outil | Effet |
 |---|---|
-| `envoyer_email` | Envoie un e-mail depuis ton adresse pro (Gmail ou boîte pro, selon les réglages), avec ta signature principale ou secondaire, phrase STOP en option. Claude doit te montrer le texte exact et attendre ton accord. Les tirets longs sont refusés. Chaque envoi est noté dans `Données\envois-mcp.jsonl` |
-| `etat_prospection` | E-mails à valider, en attente, réponses à traiter, prospects par statut |
-| `lire_boite_contact` | Les derniers e-mails reçus (lecture seule) |
+| `send_email` | Envoie un e-mail depuis ton adresse pro (Gmail ou boîte pro, selon les réglages), avec ta signature principale ou secondaire, phrase STOP en option. Claude doit te montrer le texte exact et attendre ton accord. Les tirets longs sont refusés. Chaque envoi est noté dans `Données\mcp-sends.jsonl` |
+| `prospecting_status` | E-mails à valider, en attente, réponses à traiter, prospects par statut |
+| `read_inbox` | Les derniers e-mails reçus (lecture seule) |
 
 Si Claude Code est installé après DC Prospect : Réglages, Avancé, **Déclarer le MCP dans Claude Code**.

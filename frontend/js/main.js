@@ -1,116 +1,116 @@
 // Entry point of the interface of DC Prospect: frame, data refresh (every 15 s), clicks
 import { $, $$ } from './utils/dom.js'
-import { store } from './stores/etat.js'
-import { api, exiger, hote } from './api.js'
-import { monterAppShell, rendreAppShell, afficherVue } from './components/layout/AppShell.js'
-import { action, toast, confirmer } from './components/ui/Toast.js'
-import { rendreAujourdhui } from './components/views/Aujourdhui.js'
-import { rendreProspects } from './components/views/Prospects.js'
-import { rendreReglages, chargerReglages, clicReglages, changeReglages } from './components/views/Reglages.js'
-import { rendreAide } from './components/views/Aide.js'
+import { store } from './stores/state.js'
+import { api, ensureSuccess, hostAction } from './api.js'
+import { mountAppShell, renderAppShell, showView } from './components/layout/AppShell.js'
+import { runAction, toast, confirmClick } from './components/ui/Toast.js'
+import { renderToday } from './components/views/Today.js'
+import { renderProspects } from './components/views/Prospects.js'
+import { renderSettings, loadSettings, onSettingsClick, onSettingsChange } from './components/views/Settings.js'
+import { renderHelp } from './components/views/Help.js'
 
-monterAppShell()
+mountAppShell()
 
-const VUES = { aujourdhui: rendreAujourdhui, prospects: rendreProspects, reglages: rendreReglages, aide: rendreAide }
+const VIEWS = { today: renderToday, prospects: renderProspects, settings: renderSettings, help: renderHelp }
 
-// periodique = the refresh every 15 s: the settings and the help are not redrawn
+// periodic = the refresh every 15 s: the settings and the help are not redrawn
 // (it closed « Avancé » and wiped what was being typed)
-function rendre({ periodique = false } = {}) {
-    rendreAppShell()
-    if (periodique && (store.vue === 'reglages' || store.vue === 'aide')) return
-    VUES[store.vue]?.({ periodique })
+function render({ periodic = false } = {}) {
+    renderAppShell()
+    if (periodic && (store.view === 'settings' || store.view === 'help')) return
+    VIEWS[store.view]?.({ periodic })
 }
 
 // Start screen: stays until the engine answers (it can take a few seconds when Windows starts)
-let demarre = false
-async function demarrer(essai = 0) {
-    const r = await api.get('/etat')
-    if (!r.success && essai < 60) {
-        if (essai > 2) $('#chargement-texte').textContent = 'Démarrage du moteur, encore un instant'
-        return setTimeout(() => demarrer(essai + 1), 1000)
+let started = false
+async function start(attempt = 0) {
+    const r = await api.get('/state')
+    if (!r.success && attempt < 60) {
+        if (attempt > 2) $('#loading-text').textContent = 'Démarrage du moteur, encore un instant'
+        return setTimeout(() => start(attempt + 1), 1000)
     }
-    store.E = r.success ? r : null
-    await chargerReglages()
-    demarre = true
-    rendre()
-    $('#chargement').classList.add('fini')
-    setTimeout(() => $('#chargement')?.remove(), 500)
-    setInterval(() => charger({ periodique: true }), 15000)
+    store.day = r.success ? r : null
+    await loadSettings()
+    started = true
+    render()
+    $('#loading-screen').classList.add('done')
+    setTimeout(() => $('#loading-screen')?.remove(), 500)
+    setInterval(() => refresh({ periodic: true }), 15000)
 }
 
-async function charger(options = {}) {
-    if (!demarre) return
-    const r = await api.get('/etat')
-    store.E = r.success ? r : null
-    if (!store.R) await chargerReglages()
-    rendre(options)
+async function refresh(options = {}) {
+    if (!started) return
+    const r = await api.get('/state')
+    store.day = r.success ? r : null
+    if (!store.settings) await loadSettings()
+    render(options)
 }
 
 // after an action (save, connect...): everything is redrawn with fresh settings
-async function recharger() {
-    store.R = null
-    await charger()
-    if (store.vue === 'reglages') rendreReglages()
+async function reload() {
+    store.settings = null
+    await refresh()
+    if (store.view === 'settings') renderSettings()
     return true
 }
 
-const attente = (texte) => `<div class="vue-charge"><span class="roue"></span>${texte}</div>`
+const waiting = (text) => `<div class="view-loading"><span class="spinner"></span>${text}</div>`
 
-function aller(v) {
-    afficherVue(v)
-    if (v === 'reglages') {
+function goTo(view) {
+    showView(view)
+    if (view === 'settings') {
         // the settings are reloaded each time: a spinner while they come (only if nothing is shown yet)
-        const el = $('#vue-reglages')
-        if (!el.innerHTML.trim()) el.innerHTML = attente('Chargement des réglages')
-        chargerReglages().then(rendre)
+        const el = $('#view-settings')
+        if (!el.innerHTML.trim()) el.innerHTML = waiting('Chargement des réglages')
+        loadSettings().then(render)
     }
-    else rendre()
+    else render()
 }
 
 // while I type in an e-mail, the refresh does not redraw it
-document.addEventListener('focusin', (e) => { if (e.target.closest('#a-valider')) store.edition = true })
-document.addEventListener('focusout', () => setTimeout(() => (store.edition = !!document.activeElement?.closest?.('#a-valider')), 50))
+document.addEventListener('focusin', (e) => { if (e.target.closest('#to-approve')) store.editing = true })
+document.addEventListener('focusout', () => setTimeout(() => (store.editing = !!document.activeElement?.closest?.('#to-approve')), 50))
 
 document.addEventListener('click', async (ev) => {
     const b = ev.target.closest('button')
     if (!b) return
-    if (b.dataset.vue) return aller(b.dataset.vue)
-    if (b.dataset.aller) return aller(b.dataset.aller)
-    if (b.id === 'preparer') { await action(b, () => exiger(api.post('/preparation')), 'Préparation lancée : la recherche tourne en fond'); return charger() }
-    if (b.dataset.suivi) {
-        if (b.dataset.suivi === 'refus' && !confirmer(b, 'Confirmer : ne plus lui écrire')) return
-        await action(b, () => exiger(api.post('/suivi', { id: b.dataset.id, action: b.dataset.suivi })), 'Noté')
-        return charger()
+    if (b.dataset.view) return goTo(b.dataset.view)
+    if (b.dataset.go) return goTo(b.dataset.go)
+    if (b.id === 'prepare') { await runAction(b, () => ensureSuccess(api.post('/prepare')), 'Préparation lancée : la recherche tourne en fond'); return refresh() }
+    if (b.dataset.track) {
+        if (b.dataset.track === 'declined' && !confirmClick(b, 'Confirmer : ne plus lui écrire')) return
+        await runAction(b, () => ensureSuccess(api.post('/tracking', { id: b.dataset.id, action: b.dataset.track })), 'Noté')
+        return refresh()
     }
-    if (b.dataset.brouillon) {
-        const c = b.closest('.carte'), d = { id: c.dataset.id, etape: c.dataset.etape, action: b.dataset.brouillon }
-        if ($('[data-corps]', c)) { d.objet = $('[data-objet]', c).value; d.corps = $('[data-corps]', c).value }
-        if (d.action === 'rejeter' && !confirmer(b, 'Confirmer : ne pas lui écrire')) return
-        const r = await action(b, () => exiger(api.post('/brouillons', d)), { valider: 'Validé : il partira au prochain créneau', rejeter: 'Prospect retiré', annuler: 'Validation annulée' }[d.action])
-        if (r) { store.edition = false; charger() }
+    if (b.dataset.draft) {
+        const card = b.closest('.card'), d = { id: card.dataset.id, step: card.dataset.step, action: b.dataset.draft }
+        if ($('[data-body]', card)) { d.subject = $('[data-subject]', card).value; d.body = $('[data-body]', card).value }
+        if (d.action === 'reject' && !confirmClick(b, 'Confirmer : ne pas lui écrire')) return
+        const r = await runAction(b, () => ensureSuccess(api.post('/drafts', d)), { approve: 'Validé : il partira au prochain créneau', reject: 'Prospect retiré', cancel: 'Validation annulée' }[d.action])
+        if (r) { store.editing = false; refresh() }
         return
     }
-    if (b.id === 'tout-valider') {
-        b.disabled = true; b.classList.add('charge')
+    if (b.id === 'approve-all') {
+        b.disabled = true; b.classList.add('loading')
         let n = 0
-        for (const c of $$('#a-valider .carte')) {
-            if ($('.pb', c)) continue
-            const r = await api.post('/brouillons', { id: c.dataset.id, etape: c.dataset.etape, action: 'valider', objet: $('[data-objet]', c).value, corps: $('[data-corps]', c).value })
+        for (const card of $$('#to-approve .card')) {
+            if ($('.problem', card)) continue
+            const r = await api.post('/drafts', { id: card.dataset.id, step: card.dataset.step, action: 'approve', subject: $('[data-subject]', card).value, body: $('[data-body]', card).value })
             if (r.success) n++; else toast(r.error, true)
         }
         toast(`${n} e-mail(s) validé(s) : ils partiront aux prochains créneaux`)
-        b.disabled = false; b.classList.remove('charge'); store.edition = false
-        return charger()
+        b.disabled = false; b.classList.remove('loading'); store.editing = false
+        return refresh()
     }
-    if (b.dataset.hote) {
-        await action(b, () => hote(b.dataset.hote), (x) => (typeof x === 'string' ? x : 'Fait'))
-        if (['connecterClaude', 'installerClaude'].includes(b.dataset.hote)) setTimeout(recharger, 15000)
-        return recharger()
+    if (b.dataset.host) {
+        await runAction(b, () => hostAction(b.dataset.host), (x) => (typeof x === 'string' ? x : 'Fait'))
+        if (['connectClaude', 'installClaude'].includes(b.dataset.host)) setTimeout(reload, 15000)
+        return reload()
     }
-    if (b.dataset.ouvrir) return hote('ouvrir', b.dataset.ouvrir).catch((e) => toast(e.message, true))
-    if (await clicReglages(b, recharger)) return
+    if (b.dataset.open) return hostAction('open', b.dataset.open).catch((e) => toast(e.message, true))
+    if (await onSettingsClick(b, reload)) return
 })
 
-document.addEventListener('change', (ev) => changeReglages(ev.target, recharger))
+document.addEventListener('change', (ev) => onSettingsChange(ev.target, reload))
 
-demarrer()
+start()

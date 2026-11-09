@@ -2,7 +2,7 @@
 
 L'onglet **Réglages** montre d'abord l'essentiel (profil, comptes, application) ; tout le reste est replié dans **Avancé**.
 
-Ce qui est **partagé entre tes PC** (dans le dossier de données, `Données\reglages.json`) : profil, adresse et serveur d'envoi, zones, métiers, volumes. Ce qui est **propre à ce PC** (`%APPDATA%\prospection-auto`) : comptes, mots de passe, dossier de données choisi, démarrage avec Windows.
+Ce qui est **partagé entre tes PC** (dans le dossier de données, `Données\settings.json`) : profil, adresse et serveur d'envoi, zones, métiers, volumes. Ce qui est **propre à ce PC** (`%APPDATA%\prospection-auto`) : comptes, mots de passe, dossier de données choisi, démarrage avec Windows.
 
 ## Profil
 | Champ | Utilisation |
@@ -78,11 +78,11 @@ DC Prospect n'accède qu'aux fichiers qu'il a créés (accès `drive.file`), pas
 - **Chercher une mise à jour**.
 
 ### Mes propres prompts (sans écran, pour les utilisateurs avancés)
-DC Prospect utilise ses prompts neutres (`ressources/prompts`), remplis avec ton profil. Pour utiliser les tiens, ajoute dans `%APPDATA%\prospection-auto\local.json` : `"dossierPrompts": "C:/chemin/vers/mes/prompts"`. DC Prospect y reconnaît les prompts par leur nom de fichier :
+DC Prospect utilise ses prompts neutres (`resources/prompts`), remplis avec ton profil. Pour utiliser les tiens, ajoute dans `%APPDATA%\prospection-auto\local.json` : `"promptsFolder": "C:/chemin/vers/mes/prompts"`. DC Prospect y reconnaît les prompts par leur nom de fichier :
 | Rôle | Nom de fichier reconnu (contient) |
 |---|---|
 | Fiche prospect (score, niveau, offre) | « Fiche prospect » ou « Prospect sheet » |
-| Premier e-mail | « Premier e-mail » ou `Email.txt` |
+| Premier e-mail | « Premier e-mail », « First e-mail » ou `Email.txt` |
 | Relance | « Relance de prospection » ou « Follow-up » |
 
 Les règles automatiques (pas de signature tapée, pas de phrase STOP, JSON) s'ajoutent toujours à tes prompts.

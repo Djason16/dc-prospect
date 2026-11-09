@@ -13,28 +13,30 @@
 | Installateur | electron-builder (NSIS, une installation par utilisateur, `asar: false` pour que le MCP et l'interface restent de vrais fichiers) |
 
 ## Arborescence
+Tout le code est en anglais (fichiers, fonctions, variables, routes, clés des données) ; seuls les textes lus par l'utilisateur sont en français.
 ```
 dc-prospect/
 ├── backend/
 │   ├── server.mjs              serveur : frontend/ + table des routes /api vers les contrôleurs
-│   ├── moteur.mjs              la journée, le tour de chaque minute, le verrou, les notifications
-│   ├── run.mjs                 le moteur sans fenêtre (npm run moteur)
-│   ├── tester.mjs              vérifie tout sans rien envoyer (npm run tester)
+│   ├── engine.mjs              la journée, le tour de chaque minute, le verrou, les notifications
+│   ├── run.mjs                 le moteur sans fenêtre (npm run engine)
+│   ├── check.mjs               vérifie tout sans rien envoyer (npm run check)
 │   ├── mcp-server.mjs          MCP « contact-mail »
-│   ├── controllers/            EtatController, ProspectsController, ReglagesController, ComptesController
+│   ├── controllers/            StateController, ProspectsController, SettingsController, AccountsController
 │   ├── services/
 │   │   ├── base.mjs            config, dossiers, état (prospects.json), dates, jours fériés, créneaux, journal
-│   │   ├── reglages.mjs        profil, zones, métiers, volumes (Données\reglages.json), zone de la semaine
-│   │   ├── prospection.mjs     réponses, recherche, lot du jour, envoi, oubli à 12 mois, rendement par métier
+│   │   ├── migration.mjs       conversion une seule fois des fichiers écrits avant la 1.2.0 (clés en français)
+│   │   ├── settings.mjs        profil, zones, métiers, volumes (Données\settings.json), zone de la semaine
+│   │   ├── prospecting.mjs     réponses, recherche, lot du jour, envoi, oubli à 12 mois, rendement par métier
 │   │   ├── claude.mjs          appels à Claude Code, prompts (rôles), contrôle des textes, connexion Claude
 │   │   ├── web.mjs             communes d'une zone, contrôle MX, vérification au registre
-│   │   ├── entreprises.mjs     registre des entreprises (ancienne recherche, gardée pour référence)
+│   │   ├── companies.mjs       registre des entreprises (ancienne recherche, gardée pour référence)
 │   │   ├── mail.mjs            signatures, composition, envoi et lecture (Gmail ou boîte pro), tests
 │   │   ├── google.mjs          OAuth bureau (PKCE), Gmail API, Drive (rapports en Docs), Sheets
-│   │   ├── rapport.mjs         chiffres, tableau (Excel et Sheets), rapport du jour, bilan du vendredi
-│   │   ├── coffre.mjs          secrets chiffrés par Windows (DPAPI via PowerShell)
-│   │   └── systeme.mjs         verrou entre PC, notifications sans fenêtre, nettoyage des journaux
-│   └── utils/ResponseHelper.mjs  { success: true, ...data } / { success: false, error, type }
+│   │   ├── report.mjs          chiffres, tableau (Excel et Sheets), rapport du jour, bilan du vendredi
+│   │   ├── vault.mjs           secrets chiffrés par Windows (DPAPI via PowerShell)
+│   │   └── system.mjs          verrou entre PC, notifications sans fenêtre, nettoyage des journaux
+│   └── utils/ResponseHelper.mjs  { success: true, ...data } / { success: false, error, type } ; ApiError
 ├── frontend/
 │   ├── pages/index.html        la page (le cadre est ajouté par AppShell)
 │   ├── assets/css/             main.css, base/, components/, utils/variables.css, utils/fonts.css
@@ -42,16 +44,15 @@ dc-prospect/
 │   └── js/
 │       ├── main.js             point d'entrée : cadre, rafraîchissement toutes les 15 s, clics
 │       ├── api.js, config.js   client de l'API (ne lève jamais d'erreur), adresse de l'API
-│       ├── stores/etat.js      état de l'interface
+│       ├── stores/state.js     état de l'interface
 │       ├── utils/dom.js        $, $$, esc, pct
-│       └── components/         layout/AppShell, ui/ (Toast, CarteEmail), views/ (Aujourdhui, Prospects, Reglages, Aide)
+│       └── components/         layout/AppShell, ui/ (Toast, EmailCard), views/ (Today, Prospects, Settings, Help)
 ├── electron/main.mjs           l'application Windows, les actions « hôte » (comptes, dossiers, mises à jour, MCP)
-├── ressources/prompts/         fiche-prospect.txt, premier-email.txt, relance.txt ({{NOM}}, {{ACTIVITE}}, {{OFFRE}}...)
+├── resources/prompts/          prospect-sheet.txt, first-email.txt, follow-up.txt ({{NOM}}, {{ACTIVITE}}, {{OFFRE}}...)
 ├── build/icon.png              icône (512 px)
 ├── build/fonts/, build/logo-light.png  polices Barlow Condensed (licence OFL) et logo, pour la bannière
-├── build/fonts/, build/logo-light.png  polices Barlow Condensed (licence OFL) et logo pour la bannière
 ├── build/installer.nsh         étape en plus de l'installateur : propose d'installer Claude Code s'il manque
-├── scripts/publier.ps1         fabrique l'installateur et le dépose dans <données>\Installation
+├── scripts/publish.ps1         fabrique l'installateur et le dépose dans <données>\Installation
 ├── scripts/make-banner.py      dessine la bannière et la ligne du README (Python + Pillow), même mise en page que DC Scaffold
 ├── start.bat, start.ps1        le menu du projet
 ├── config.json                 réglages par défaut, sans rien de personnel
@@ -63,11 +64,11 @@ Double-clic sur `start.bat` (ou `.\start.ps1 -Action <touche>`) :
 | Touche | Effet |
 |---|---|
 | `D` Développement | `npm start` : l'application Electron depuis le code |
-| `M` Moteur seul | `npm run moteur` : sans fenêtre, interface sur http://localhost:4747 |
-| `T` Tester | `npm run tester` : dossier, signature, envoi et lecture, Claude, registre |
+| `M` Moteur seul | `npm run engine` : sans fenêtre, interface sur http://localhost:4747 |
+| `T` Tester | `npm run check` : dossier, signature, envoi et lecture, Claude, registre |
 | `I` Installer | `npm install` |
 | `B` Build | `npx electron-builder --win nsis` : installateur dans `dist\` |
-| `P` Publier | `scripts\publier.ps1` |
+| `P` Publier | `scripts\publish.ps1` |
 
 **Tester sans toucher aux vraies données** : `PROSPECTION_DRIVE=<dossier de test>` et `PROSPECTION_PORT=4799` (le moteur prend ce dossier et ce port).
 
@@ -75,26 +76,34 @@ Double-clic sur `start.bat` (ou `.\start.ps1 -Action <touche>`) :
 Toutes les réponses : `{ success: true, ...data }` ou `{ success: false, error, type }`. Les requêtes autres que GET exigent l'en-tête `X-Prospection: 1`.
 | Méthode et chemin | Contrôleur | Effet |
 |---|---|---|
-| `GET /api/etat` | EtatController.getAll | État du jour (à valider, file, réponses, suivi, chiffres, santé, journal) |
-| `GET /api/apercu/:id/:etape` | EtatController.apercu | Page HTML de l'e-mail avec la signature |
-| `GET /api/apercu-signature` | | Page HTML de la signature principale |
-| `POST /api/brouillons` | ProspectsController.brouillon | `{ id, etape, action: valider \| annuler \| rejeter, objet?, corps? }` |
-| `POST /api/suivi` | ProspectsController.suivi | `{ id, action: appel \| maquette \| proposition \| client \| traite \| refus \| stop \| ecarter }` |
-| `POST /api/preparation` | ProspectsController.preparer | Lance la journée tout de suite |
-| `GET /api/reglages` | ReglagesController.getAll | Profil, zones, métiers, volumes, serveur, comptes |
-| `PUT /api/reglages` | ReglagesController.update | `{ profil?, zones?, secteurs?, messagerie?, maxRecherchesParJour?, ... }` (validé) |
-| `POST /api/comptes/gmail` | ComptesController.gmail | `{ adresse, mdp }` : teste puis range le mot de passe d'application |
-| `DELETE /api/comptes/gmail` | ComptesController.oublierGmail | |
-| `POST /api/comptes/mot-de-passe` | ComptesController.motDePasse | `{ mdp }` de la boîte pro, puis test |
-| `PUT /api/comptes/envoi` | ComptesController.modeEnvoi | `{ mode: gmail \| boite }` |
-| `POST /api/comptes/test-envoi` | ComptesController.testEnvoi | E-mail de test à soi-même |
-| `POST /api/comptes/tester` | ComptesController.tester | Vérifie tout |
-| `POST /api/hote` | ComptesController.hote | `{ action, valeur }` : actions de l'application Windows (connexion Claude et Google, dossiers, démarrage, mises à jour, MCP, quitter) |
+| `GET /api/state` | StateController.getAll | État du jour (à valider, file, réponses, suivi, chiffres, santé, journal) |
+| `GET /api/preview/:id/:step` | StateController.preview | Page HTML de l'e-mail avec la signature (`step` : `first`, `followUp1`, `followUp2`) |
+| `GET /api/signature-preview` | | Page HTML de la signature principale |
+| `POST /api/drafts` | ProspectsController.draft | `{ id, step, action: approve \| cancel \| reject, subject?, body? }` |
+| `POST /api/tracking` | ProspectsController.track | `{ id, action: call \| mockup \| proposal \| client \| handled \| declined \| stop \| discard }` |
+| `POST /api/prepare` | ProspectsController.prepare | Lance la journée tout de suite |
+| `GET /api/settings` | SettingsController.getAll | Profil, zones, métiers, volumes, serveur, comptes |
+| `PUT /api/settings` | SettingsController.update | `{ profile?, zones?, trades?, mailbox?, maxSearchesPerDay?, ... }` (validé) |
+| `POST /api/accounts/gmail` | AccountsController.gmail | `{ address, password }` : teste puis range le mot de passe d'application |
+| `DELETE /api/accounts/gmail` | AccountsController.forgetGmail | |
+| `POST /api/accounts/password` | AccountsController.password | `{ password }` de la boîte pro, puis test |
+| `PUT /api/accounts/sending-mode` | AccountsController.sendingMode | `{ mode: gmail \| mailbox }` |
+| `POST /api/accounts/test-email` | AccountsController.testEmail | E-mail de test à soi-même |
+| `POST /api/accounts/check` | AccountsController.check | Vérifie tout |
+| `POST /api/host` | AccountsController.host | `{ action, value }` : actions de l'application Windows (connexion Claude et Google, dossiers, démarrage, mises à jour, MCP, quitter) |
 
 ## Les réglages
 - `config.json` : valeurs par défaut (aucune donnée personnelle).
-- `Données\reglages.json` (partagé) : remplace `profil`, `expediteur`, `smtp`, `imap`, `zones`, `secteurs`, volumes, modèles.
-- `%APPDATA%\prospection-auto\local.json` (ce PC) : `dossierDrive`, `dossierPrompts`, `envoi`, `demarrageAuto`, `mcpChemin`.
+- `Données\settings.json` (partagé) : remplace `profile`, `sender`, `smtp`, `imap`, `zones`, `trades`, volumes, calendrier, modèles.
+- `%APPDATA%\prospection-auto\local.json` (ce PC) : `dataFolder`, `promptsFolder`, `sendingMode`, `autoStart`, `mcpPath`, `mcpDeclaredAt`.
+
+## Passage à la 1.2.0 (code et données en anglais)
+Au premier lancement de la 1.2.0, `backend/services/migration.mjs` convertit une seule fois ce qu'une version plus ancienne a écrit :
+- `Données\prospects.json` (version 1 vers 2 : clés, statuts `pret` vers `ready`, étapes `j0`, `r1`, `r2` vers `first`, `followUp1`, `followUp2`...) ; l'ancien fichier est gardé en `prospects.v1-backup.json` ;
+- `Données\reglages.json` devient `Données\settings.json` (copie en `reglages.v1-backup.json`) ; `envois-mcp.jsonl` devient `mcp-sends.jsonl` ;
+- sur ce PC : `local.json` et `google.json` (clés), `consommation-claude.json` devient `claude-usage.json`, `journaux\` devient `logs\`.
+
+Une version plus ancienne ne sait pas relire les fichiers convertis : installe la 1.2.0 sur **tous** les PC qui partagent le dossier de données. Le verrou de l'ancienne version (`verrou.json`) reste respecté, pour que deux PC ne tournent jamais ensemble.
 
 ## Fabriquer et publier
 1. Monte `version` dans `package.json` (ex. `1.0.1`) et note les changements dans `CHANGELOG.md`.
@@ -108,7 +117,7 @@ Pièges :
 - Le journal écrit sur la sortie d'erreur : la sortie standard est réservée au protocole du MCP.
 
 ## Conventions
-- Commentaires et messages de commit en anglais ; textes de l'interface en français, au tutoiement, sans tiret long.
+- Tout le code en anglais : noms de fichiers, fonctions, variables, classes CSS, routes de l'API, clés des données, commentaires et messages de commit. Seuls les textes lus par l'utilisateur (interface, e-mails, rapports, consignes données à Claude) sont en français, au tutoiement, sans tiret long.
 - Pas de secret dans le code ni dans Git (`.gitignore` : `*.secret`, `local.json`, `.env`, journaux, `dist/`).
 - Rien de personnel dans le code : tout ce qui concerne l'utilisateur passe par le profil et les réglages.
 - Fichiers courts et lisibles ; une responsabilité par service ; réponses de l'API toujours au format `{ success, ... }`.

@@ -3,10 +3,10 @@
 </p>
 
 <p align="center">
-  <img src="assets/readme/badges/version.svg" alt="Version 1.1.1">
-  <img src="assets/readme/badges/windows.svg" alt="Windows 10 | 11">
-  <img src="assets/readme/badges/claude.svg" alt="Claude Code">
-  <img src="assets/readme/badges/prive.svg" alt="Projet privé">
+  <img src="https://img.shields.io/badge/VERSION-1.2.0-7ee6a8?style=for-the-badge&amp;labelColor=111417" alt="Version 1.2.0">
+  <img src="https://img.shields.io/badge/WINDOWS-10%20%7C%2011-7ee6a8?style=for-the-badge&amp;labelColor=111417" alt="Windows 10 | 11">
+  <img src="https://img.shields.io/badge/CLAUDE-CODE-7ee6a8?style=for-the-badge&amp;labelColor=111417" alt="Claude Code">
+  <img src="https://img.shields.io/badge/PROJET-PRIV%C3%89-7ee6a8?style=for-the-badge&amp;labelColor=111417" alt="Projet privé">
 </p>
 
 <p align="center">
@@ -23,12 +23,12 @@ Les jours de recherche que tu choisis, DC Prospect cherche sur le web de petites
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/readme/aujourdhui.png" alt="L'écran Aujourd'hui : à valider, réponses, envois du jour"></td>
-    <td width="50%"><img src="assets/readme/valider.png" alt="Un e-mail rédigé par Claude, à relire et valider"></td>
+    <td width="50%"><img src="assets/readme/today.png" alt="L'écran Aujourd'hui : à valider, réponses, envois du jour"></td>
+    <td width="50%"><img src="assets/readme/approve.png" alt="Un e-mail rédigé par Claude, à relire et valider"></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/readme/apercu.png" alt="L'e-mail tel que le prospect le reçoit, avec la signature et la phrase STOP"></td>
-    <td width="50%"><img src="assets/readme/chiffres.png" alt="Les chiffres du plan et la comparaison des zones"></td>
+    <td width="50%"><img src="assets/readme/preview.png" alt="L'e-mail tel que le prospect le reçoit, avec la signature et la phrase STOP"></td>
+    <td width="50%"><img src="assets/readme/figures.png" alt="Les chiffres du plan et la comparaison des zones"></td>
   </tr>
 </table>
 
@@ -52,7 +52,7 @@ Les jours de recherche que tu choisis, DC Prospect cherche sur le web de petites
 | [7. Dépannage](docs/07-depannage.md) | Les messages d'erreur et quoi faire |
 | [8. Développement](docs/08-developpement.md) | Architecture, API, lancer en développement, fabriquer et publier l'installateur |
 
-<p align="center"><img src="assets/readme/comptes.png" alt="Les comptes : Claude et l'envoi par Gmail" width="80%"></p>
+<p align="center"><img src="assets/readme/accounts.png" alt="Les comptes : Claude et l'envoi par Gmail" width="80%"></p>
 
 ## Ce qu'il faut
 - Windows 10 ou 11.
@@ -68,15 +68,15 @@ dc-prospect/
 ├── backend/            le moteur et l'API locale (http://localhost:4747/api)
 ├── frontend/           l'interface (pages, assets/css, js)
 ├── electron/main.mjs   l'application Windows
-├── ressources/prompts/ prompts neutres livrés avec l'application
+├── resources/prompts/ prompts neutres livrés avec l'application
 ├── build/icon.png      icône
 ├── assets/readme/      images du README
 ├── docs/               cette documentation
-├── scripts/            publier.ps1
+├── scripts/            publish.ps1
 ├── start.bat, start.ps1  le menu du projet
 ├── config.json         réglages par défaut (rien de personnel)
 └── package.json
 ```
 
 ## Version
-1.1.1 : voir [CHANGELOG.md](CHANGELOG.md).
+1.2.0 : voir [CHANGELOG.md](CHANGELOG.md).

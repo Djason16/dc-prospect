@@ -6,4 +6,4 @@
 .label { margin: 0; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--paper-muted); }
 .eyebrow { color: var(--mint); }
 .muted { color: var(--paper-muted); }
-.petit { font-size: 0.95rem; }
+.small { font-size: 0.95rem; }
