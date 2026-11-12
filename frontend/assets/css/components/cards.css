@@ -17,3 +17,7 @@
 .banner.info { border-color: var(--line); background: var(--panel); }
 .empty { padding: 1.4rem; border: 1px dashed var(--line); color: var(--paper-muted); }
 .problem { margin-top: 0.7rem; color: var(--red); }
+@media (max-width: 560px) {
+    .banner { flex-direction: column; align-items: flex-start; }
+    .card, .tile { padding: 1.1rem; }
+}

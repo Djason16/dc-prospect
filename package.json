@@ -1,15 +1,18 @@
 {
   "name": "dc-prospect",
-  "version": "1.2.0",
+  "version": "1.3.1",
   "private": true,
   "description": "DC Prospect: Windows app that runs a prospecting plan for any freelancer or small business (leads, e-mails, follow-ups, reports)",
   "type": "module",
   "scripts": {
-    "start": "electron .",
-    "engine": "node backend/run.mjs",
-    "mcp": "node backend/mcp-server.mjs",
-    "check": "node backend/check.mjs",
-    "build": "electron-builder --win nsis",
+    "clean": "node -e \"require('fs').rmSync('out',{recursive:true,force:true})\"",
+    "build:ts": "npm run clean && tsc -p tsconfig.json && tsc -p frontend/js/tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p frontend/js/tsconfig.json --noEmit",
+    "start": "npm run build:ts && electron .",
+    "engine": "npm run build:ts && node out/backend/run.js",
+    "mcp": "npm run build:ts && node out/backend/mcp-server.js",
+    "check": "npm run build:ts && node out/backend/check.js",
+    "build": "npm run build:ts && electron-builder --win nsis",
     "publish": "pwsh -NoProfile -File scripts/publish.ps1"
   },
   "dependencies": {
@@ -17,16 +20,21 @@
     "exceljs": "^4.4.0",
     "imapflow": "^2.11.0",
     "mailparser": "^3.14.2",
+    "node-llama-cpp": "3.22.2",
     "nodemailer": "^10.3.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/nodemailer": "^8.0.2",
     "electron": "^45.2.3",
-    "electron-builder": "^26.18.0"
+    "electron-builder": "^26.18.0",
+    "typescript": "^5.9.3"
   },
   "productName": "DC Prospect",
   "author": "Djason CHERY",
-  "main": "electron/main.mjs",
+  "license": "UNLICENSED",
+  "main": "out/electron/main.js",
   "build": {
     "appId": "dev.djason-chery.prospection",
     "productName": "DC Prospect",
@@ -36,12 +44,19 @@
       "buildResources": "build"
     },
     "files": [
-      "electron/**",
-      "backend/**",
-      "frontend/**",
+      "out/electron/**",
+      "out/backend/**",
+      "out/frontend/**",
+      "frontend/pages/**",
+      "frontend/assets/**",
       "resources/**",
       "config.json",
-      "package.json"
+      "package.json",
+      "!**/*.ts",
+      "!**/*.map",
+      "!node_modules/@node-llama-cpp/win-x64-cuda/**",
+      "!node_modules/@node-llama-cpp/win-x64-cuda-ext/**",
+      "!node_modules/@node-llama-cpp/win-arm64/**"
     ],
     "win": {
       "target": "nsis",

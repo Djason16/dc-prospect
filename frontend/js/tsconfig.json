@@ -1,0 +1,13 @@
+{
+    // Interface (browser modules, no bundler): frontend/js compiled to out/frontend/js, imports written with ".js"
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "module": "ES2022",
+        "moduleResolution": "Bundler",
+        "lib": ["ES2023", "DOM", "DOM.Iterable"],
+        "types": [],
+        "rootDir": ".",
+        "outDir": "../../out/frontend/js"
+    },
+    "include": ["**/*.ts"]
+}

@@ -13,14 +13,21 @@
 .btn.link { background: none; padding: 0 0.4rem; min-height: 36px; color: var(--paper-muted); }
 .btn.link:hover { color: var(--mint); background: none; }
 .btn.small { min-height: 38px; padding: 0 1rem; font-size: 0.72rem; }
-.btn:disabled { opacity: 0.45; cursor: wait; }
+/* disabled (while an action runs): muted but still readable (4.5:1), not a faded copy of the button */
+.btn:disabled, .btn:disabled:hover { background: var(--panel-2); color: var(--paper-muted); box-shadow: none; cursor: wait; }
 .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.1rem; }
 label.field { display: block; margin: 0.9rem 0 0.4rem; }
-input[type=text], input[type=password], input[type=number], input[type=search], input[type=time], textarea, select {
-    width: 100%; padding: 0.8rem 0.9rem; border: 1px solid var(--line); background: var(--ink-800); color: var(--paper);
+input[type=text], input[type=password], input[type=number], input[type=search], input[type=time], input[type=date], textarea, select {
+    width: 100%; padding: 0.8rem 0.9rem; border: 1px solid var(--field-line); background: var(--ink-800); color: var(--paper);
     font: 400 1.05rem/1.5 var(--font-text); border-radius: 0;
 }
 textarea { min-height: 250px; resize: vertical; }
+::placeholder { color: var(--paper-faint); opacity: 1; }
+/* Select: our own arrow, as far from the right edge as the calendar icon of the date fields (0.9rem, the padding) */
+select {
+    appearance: none; padding-right: 2.6rem; cursor: pointer;
+    background: var(--ink-800) url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%278%27 viewBox=%270 0 12 8%27%3E%3Cpath d=%27M1 1.5l5 5 5-5%27 fill=%27none%27 stroke=%27%23d5dce1%27 stroke-width=%271.8%27/%3E%3C/svg%3E") no-repeat right 0.9rem center / 12px 8px;
+}
 input:focus, textarea:focus, select:focus { outline: none; border-color: var(--mint); }
 input[readonly] { color: var(--paper-muted); }
 .switch { display: inline-flex; align-items: center; gap: 0.7rem; cursor: pointer; user-select: none; }
@@ -29,6 +36,14 @@ input[readonly] { color: var(--paper-muted); }
 .switch input:checked { background: rgba(126, 230, 168, 0.35); }
 .switch input:checked::after { transform: translateX(20px); background: var(--mint); }
 
-/* Time fields (calendar): same look as the other fields, light clock icon on the dark ground */
-input[type=time] { color-scheme: dark; min-height: 46px; }
-input[type=time]::-webkit-calendar-picker-indicator { filter: invert(0.85); opacity: 0.7; cursor: pointer; }
+/* Date and time fields: same look as the other fields. color-scheme: dark (variables.css) already draws their calendar
+   and clock icons light: inverting them again made them black on the dark ground */
+input[type=time], input[type=date] { min-height: 46px; }
+input[type=time]::-webkit-calendar-picker-indicator, input[type=date]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 1; }
+/* File field: its button looks like the app's buttons, the file name like the other texts */
+input[type=file] { color: var(--paper-muted); font: 0.9rem var(--font-text); width: 100%; }
+input[type=file]::file-selector-button {
+    min-height: 40px; padding: 0 1.2rem; margin-right: 1rem; border: 0; cursor: pointer;
+    background: var(--panel-2); color: var(--paper); font: 600 0.75rem/1 var(--font-text); letter-spacing: 0.18em; text-transform: uppercase;
+}
+input[type=file]::file-selector-button:hover { background: var(--line); }

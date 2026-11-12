@@ -6,3 +6,34 @@
 .filters { display: flex; gap: 0.8rem; margin-bottom: 1.2rem; }
 .filters input { flex: 1; }
 .filters select { width: auto; min-width: 12rem; }
+
+/* Narrow window: each line becomes a card, each cell shows the title of its column (data-label, set by labelCells in
+   utils/dom.ts), never a table to scroll sideways. The wide tables (10 columns) switch earlier. Titles with a sort
+   button stay, as a row of buttons above the cards */
+@media (max-width: 700px) {
+    .filters { flex-wrap: wrap; }
+    .filters input { flex: 1 1 100%; }
+    .filters select { flex: 1 1 10rem; min-width: 0; }
+    .table, .table tbody, .table tr, .table td { display: block; width: 100%; }
+    .table thead:not(:has(button)) { display: none; }
+    .table thead tr { display: flex; flex-wrap: wrap; gap: 0 1rem; }
+    .table th { border: 0; padding: 0.3rem 0; }
+    .table th:not(:has(button)) { display: none; }
+    .table tbody tr { margin-bottom: 0.7rem; padding: 0.6rem 1rem; border: 1px solid var(--line); background: var(--panel); }
+    .table td { padding: 0.3rem 0; border: 0; }
+    .table tr:hover td { background: none; }
+    .table td:empty { display: none; }
+    .table td[data-label]::before { content: attr(data-label); display: block; font: 600 0.72rem/1.4 var(--font-text); letter-spacing: 0.14em; text-transform: uppercase; color: var(--paper-muted); }
+}
+@media (min-width: 701px) and (max-width: 1000px) {
+    .table.wide, .table.wide tbody, .table.wide tr, .table.wide td { display: block; width: 100%; }
+    .table.wide thead:not(:has(button)) { display: none; }
+    .table.wide thead tr { display: flex; flex-wrap: wrap; gap: 0 1rem; }
+    .table.wide th { border: 0; padding: 0.3rem 0; }
+    .table.wide th:not(:has(button)) { display: none; }
+    .table.wide tbody tr { margin-bottom: 0.7rem; padding: 0.6rem 1rem; border: 1px solid var(--line); background: var(--panel); }
+    .table.wide td { padding: 0.3rem 0; border: 0; }
+    .table.wide tr:hover td { background: none; }
+    .table.wide td:empty { display: none; }
+    .table.wide td[data-label]::before { content: attr(data-label); display: block; font: 600 0.72rem/1.4 var(--font-text); letter-spacing: 0.14em; text-transform: uppercase; color: var(--paper-muted); }
+}
