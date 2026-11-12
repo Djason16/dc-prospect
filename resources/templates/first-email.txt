@@ -1,0 +1,11 @@
+{{BONJOUR}}
+
+{En cherchant|En regardant} {{RECHERCHE}}, je suis tombé sur {{ENTREPRISE}}, et {{CONSTAT}}.
+
+{{ACCROCHE}}
+
+Je suis {{NOM}}, {{ACTIVITE}} à {{MA_VILLE}}. {Je travaille avec des professionnels du coin.|J'accompagne des entreprises du secteur.} {{OFFRE}}
+
+{Seriez-vous d'accord pour que je vous montre en 15 minutes ce que je ferais pour {{ENTREPRISE}} ?|Auriez-vous 15 minutes pour que je vous montre ce que je ferais pour {{ENTREPRISE}} ?} {C'est sans engagement.|Sans aucun engagement, bien sûr.}
+
+Bien à vous,

@@ -9,7 +9,7 @@ $choices = [ordered]@{
     M = @('Moteur seul', 'Le moteur sans fenêtre, page sur http://localhost:4747', { if (-not (Test-Path 'node_modules')) { Install-Dependencies }; npm run engine })
     T = @('Tester', 'Vérifie le dossier, la signature, l''envoi, Claude et le registre, sans rien envoyer', { npm run check })
     I = @('Installer', 'npm install (après un git clone ou un paquet ajouté)', { Install-Dependencies })
-    B = @('Build', 'Fabrique l''installateur dans dist\ (sans le publier)', { npx electron-builder --win nsis })
+    B = @('Build', 'Fabrique l''installateur dans dist\ (sans le publier)', { npm run build })
     P = @('Publier', 'Fabrique l''installateur et le met dans le Drive : les PC équipés se mettent à jour (monte d''abord la version dans package.json)', { & (Join-Path $here 'scripts\publish.ps1') })
 }
 if (-not $Action) {

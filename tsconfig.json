@@ -1,0 +1,13 @@
+{
+    // Windows app and engine (Node.js): electron/ and backend/ compiled to out/electron and out/backend
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "lib": ["ES2023"],
+        "types": ["node"],
+        "rootDir": ".",
+        "outDir": "out"
+    },
+    "include": ["electron/**/*.ts", "backend/**/*.ts"]
+}

@@ -10,7 +10,8 @@ $localSettings = if (Test-Path $local) { Get-Content $local -Raw | ConvertFrom-J
 $data = if ($localSettings) { if ($localSettings.dataFolder) { $localSettings.dataFolder } else { $localSettings.dossierDrive } } else { $null }
 if (-not $data) { $data = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'DC Prospect' }
 $folder = Join-Path $data 'Installation'
-npx electron-builder --win nsis
+# npm run build compiles the TypeScript (out\) then runs electron-builder
+npm run build
 if ($LASTEXITCODE -ne 0) { Write-Host 'Échec de la fabrication' -ForegroundColor Red; exit 1 }
 New-Item -ItemType Directory -Force -Path $folder | Out-Null
 Get-ChildItem $folder -Filter '*.exe' | Remove-Item -Force

@@ -4,8 +4,9 @@
 | Brique | Choix |
 |---|---|
 | Application Windows | Electron (fenêtre, icône près de l'horloge, notifications, démarrage avec Windows) |
-| Moteur et API | Node.js (modules ES `.mjs`), serveur `http` sans framework, réponses au format DC Scaffold `{ success, ... }` |
-| Interface | HTML, CSS et modules JavaScript sans compilation (rangement du stack « HTML / CSS / JS » de DC Scaffold) |
+| Langage | TypeScript strict partout (`electron/`, `backend/`, `frontend/js/`), compilé par `tsc` dans `out/` (voir [TypeScript](#typescript)) |
+| Moteur et API | Node.js (modules ES), serveur `http` sans framework, réponses au format DC Scaffold `{ success, ... }` |
+| Interface | HTML, CSS et modules ES chargés tels quels par la fenêtre, sans bundler (rangement du stack « HTML / CSS / JS » de DC Scaffold) |
 | IA | Claude Code en mode `claude -p` (abonnement de l'utilisateur) : Haiku pour chercher, Sonnet pour rédiger |
 | E-mails | nodemailer (SMTP), imapflow (IMAP), mailparser |
 | Tableau | exceljs ; Google Sheets et Drive par leurs API REST (option) |
@@ -17,37 +18,55 @@ Tout le code est en anglais (fichiers, fonctions, variables, routes, clés des d
 ```
 dc-prospect/
 ├── backend/
-│   ├── server.mjs              serveur : frontend/ + table des routes /api vers les contrôleurs
-│   ├── engine.mjs              la journée, le tour de chaque minute, le verrou, les notifications
-│   ├── run.mjs                 le moteur sans fenêtre (npm run engine)
-│   ├── check.mjs               vérifie tout sans rien envoyer (npm run check)
-│   ├── mcp-server.mjs          MCP « contact-mail »
+│   ├── types.ts, types/        formes des données : réglages (settings), état et prospects (prospects), recherche et moteur (engine)
+│   ├── server.ts               serveur : frontend/ (et out/frontend/js pour /js/) + table des routes /api vers les contrôleurs
+│   ├── engine.ts               la journée, le tour de chaque minute, le verrou, les notifications
+│   ├── run.ts                  le moteur sans fenêtre (npm run engine)
+│   ├── check.ts                vérifie tout sans rien envoyer (npm run check)
+│   ├── mcp-server.ts           MCP « contact-mail »
 │   ├── controllers/            StateController, ProspectsController, SettingsController, AccountsController
 │   ├── services/
-│   │   ├── base.mjs            config, dossiers, état (prospects.json), dates, jours fériés, créneaux, journal
-│   │   ├── migration.mjs       conversion une seule fois des fichiers écrits avant la 1.2.0 (clés en français)
-│   │   ├── settings.mjs        profil, zones, métiers, volumes (Données\settings.json), zone de la semaine
-│   │   ├── prospecting.mjs     réponses, recherche, lot du jour, envoi, oubli à 12 mois, rendement par métier
-│   │   ├── claude.mjs          appels à Claude Code, prompts (rôles), contrôle des textes, connexion Claude
-│   │   ├── web.mjs             communes d'une zone, contrôle MX, vérification au registre
-│   │   ├── companies.mjs       registre des entreprises (ancienne recherche, gardée pour référence)
-│   │   ├── mail.mjs            signatures, composition, envoi et lecture (Gmail ou boîte pro), tests
-│   │   ├── google.mjs          OAuth bureau (PKCE), Gmail API, Drive (rapports en Docs), Sheets
-│   │   ├── report.mjs          chiffres, tableau (Excel et Sheets), rapport du jour, bilan du vendredi
-│   │   ├── vault.mjs           secrets chiffrés par Windows (DPAPI via PowerShell)
-│   │   └── system.mjs          verrou entre PC, notifications sans fenêtre, nettoyage des journaux
-│   └── utils/ResponseHelper.mjs  { success: true, ...data } / { success: false, error, type } ; ApiError
+│   │   ├── base.ts             config, dossiers, état (prospects.json), dates, jours fériés, créneaux, journal
+│   │   ├── migration.ts        conversion une seule fois des fichiers écrits avant la 1.2.0 (clés en français)
+│   │   ├── settings.ts         profil, zones, métiers, volumes (Données\settings.json), zone de la semaine
+│   │   ├── prospecting.ts      réponses, lot du jour, envoi, oubli à 12 mois
+│   │   ├── leadSearch.ts       recherche des prospects (ville et métier), contrôles de chaque entreprise, rendement par métier
+│   │   ├── writers.ts          qui cherche et qui écrit (IA, IA intégrée ou modèles), styles d'objet et de longueur
+│   │   ├── claude.ts           rédaction par l'IA (1er e-mail, relances, réponses, type des réponses), compte Claude, contrôle des textes
+│   │   ├── aiSearch.ts         recherche des prospects par l'IA sur le web
+│   │   ├── prompts.ts          morceaux communs des prompts : profil, fichiers de prompts, règles du mode automatique
+│   │   ├── ai.ts               moteurs d'IA interchangeables : Claude Code, API Anthropic, API compatible OpenAI, Gemini, IA intégrée
+│   │   ├── discovery.ts        recherche sans IA : registre + API Brave (site de chaque entreprise)
+│   │   ├── siteAudit.ts        lecture des sites sans IA (e-mails, téléphones, constats, SEO), mesure PageSpeed
+│   │   ├── templates.ts        rédaction sans IA par modèles (resources/templates, variantes {a|b})
+│   │   ├── localAi.ts          IA intégrée : téléchargement du modèle (Qwen3 4B), exécution sur le PC (node-llama-cpp)
+│   │   ├── localWriter.ts      rédaction par l'IA intégrée : brouillon des modèles, rendu naturel, contrôles (pas de chiffre inventé)
+│   │   ├── replies.ts          réponses aux prospects : préparation et envoi dans la même conversation
+│   │   ├── learning.ts         IA interne : chance de réponse, bandit des objets, type des réponses, santé de l'envoi
+│   │   ├── deliverability.ts   SPF, DKIM, DMARC du domaine d'envoi, montée en charge, plafond du jour
+│   │   ├── web.ts              communes d'une zone, contrôle MX, vérification au registre
+│   │   ├── companies.ts        registre des entreprises (ancienne recherche, gardée pour référence)
+│   │   ├── mail.ts             signatures, composition, envoi et lecture (Gmail ou boîte pro), tests
+│   │   ├── google.ts           OAuth bureau (PKCE), Gmail API, Drive (rapports en Docs), Sheets
+│   │   ├── report.ts           chiffres, tableau (Excel et Sheets), rapport du jour, bilan du vendredi
+│   │   ├── vault.ts            secrets chiffrés par Windows (DPAPI via PowerShell)
+│   │   └── system.ts           verrou entre PC, notifications sans fenêtre, nettoyage des journaux
+│   └── utils/ResponseHelper.ts  { success: true, ...data } / { success: false, error, type } ; ApiError
 ├── frontend/
 │   ├── pages/index.html        la page (le cadre est ajouté par AppShell)
 │   ├── assets/css/             main.css, base/, components/, utils/variables.css, utils/fonts.css
 │   ├── assets/fonts/, assets/images/
-│   └── js/
-│       ├── main.js             point d'entrée : cadre, rafraîchissement toutes les 15 s, clics
-│       ├── api.js, config.js   client de l'API (ne lève jamais d'erreur), adresse de l'API
-│       ├── stores/state.js     état de l'interface
-│       ├── utils/dom.js        $, $$, esc, pct
-│       └── components/         layout/AppShell, ui/ (Toast, EmailCard), views/ (Today, Prospects, Settings, Help)
-├── electron/main.mjs           l'application Windows, les actions « hôte » (comptes, dossiers, mises à jour, MCP)
+│   └── js/                     en TypeScript, compilé dans out/frontend/js (tsconfig.json propre au navigateur)
+│       ├── main.ts             point d'entrée : cadre, rafraîchissement toutes les 15 s, clics
+│       ├── api.ts, config.ts   client de l'API (ne lève jamais d'erreur, réponses typées), adresse de l'API
+│       ├── types.ts            formes des réponses de l'API (journée, prospects, réglages, comptes)
+│       ├── stores/state.ts     état de l'interface
+│       ├── utils/dom.ts        $, $$, esc, pct, labelCells (tableaux en cartes sur écran étroit)
+│       └── components/         layout/AppShell, ui/ (Toast, EmailCard), views/ (Today, Prospects, Settings, Help),
+│                               views/settings/ (blocks, engine, calendar, templates, diagnosis)
+├── electron/main.ts            l'application Windows, les actions « hôte » (comptes, dossiers, mises à jour, MCP)
+├── out/                        le JavaScript compilé (npm run build:ts), jamais dans Git : c'est lui qui tourne
+├── tsconfig.base.json, tsconfig.json, frontend/js/tsconfig.json  réglages de TypeScript (communs, Node, interface)
 ├── resources/prompts/          prospect-sheet.txt, first-email.txt, follow-up.txt ({{NOM}}, {{ACTIVITE}}, {{OFFRE}}...)
 ├── build/icon.png              icône (512 px)
 ├── build/fonts/, build/logo-light.png  polices Barlow Condensed (licence OFL) et logo, pour la bannière
@@ -63,14 +82,28 @@ dc-prospect/
 Double-clic sur `start.bat` (ou `.\start.ps1 -Action <touche>`) :
 | Touche | Effet |
 |---|---|
-| `D` Développement | `npm start` : l'application Electron depuis le code |
-| `M` Moteur seul | `npm run engine` : sans fenêtre, interface sur http://localhost:4747 |
-| `T` Tester | `npm run check` : dossier, signature, envoi et lecture, Claude, registre |
+| `D` Développement | `npm start` : compile le TypeScript puis lance l'application Electron |
+| `M` Moteur seul | `npm run engine` : compile, puis le moteur sans fenêtre, interface sur http://localhost:4747 |
+| `T` Tester | `npm run check` : compile, puis vérifie le dossier, la signature, l'envoi et la lecture, Claude, le registre |
 | `I` Installer | `npm install` |
-| `B` Build | `npx electron-builder --win nsis` : installateur dans `dist\` |
+| `B` Build | `npm run build` : compile, puis `electron-builder --win nsis` ; installateur dans `dist\` |
 | `P` Publier | `scripts\publish.ps1` |
 
-**Tester sans toucher aux vraies données** : `PROSPECTION_DRIVE=<dossier de test>` et `PROSPECTION_PORT=4799` (le moteur prend ce dossier et ce port).
+**Tester sans toucher aux vraies données** : `PROSPECTION_DRIVE=<dossier de test>` et `PROSPECTION_PORT=4799` (le moteur prend ce dossier et ce port). Pour ne pas toucher non plus aux réglages de ce PC (`local.json`, mots de passe, MCP), lance-le avec `APPDATA=<autre dossier de test>`.
+
+## TypeScript
+Tout le code est en TypeScript strict (`strict: true`, aucun `any` sauf aux frontières : JSON lu sur le disque ou reçu d'une API, aussitôt typé). `tsc` compile, sans bundler :
+| Commande | Effet |
+|---|---|
+| `npm run build:ts` | vide `out/`, compile `electron/` et `backend/` (`tsconfig.json`, Node) puis `frontend/js/` (`frontend/js/tsconfig.json`, navigateur) dans `out/` |
+| `npm run typecheck` | vérifie les types des deux projets sans rien écrire (doit finir à zéro erreur) |
+| `npm start`, `engine`, `mcp`, `check`, `build` | compilent d'abord (`build:ts`), puis lancent `out/...` |
+
+- **Où va le JavaScript** : `out/electron/main.js` (le `main` de `package.json`), `out/backend/**`, `out/frontend/js/**`. Le dossier `out/` n'est jamais dans Git.
+- **L'interface** reste en modules ES chargés tels quels par la fenêtre : les imports s'écrivent avec `.js` (`import { api } from './api.js'`) et `tsc` les garde. Le serveur sert `/js/...` depuis `out/frontend/js` et le reste (pages, CSS, polices, images) depuis `frontend/`.
+- **Les chemins** : le code compilé calcule le dossier du projet depuis sa place dans `out/` (`backend/services/base.ts`, `electron/main.ts`). Le MCP déclaré dans Claude Code pointe sur `out/backend/mcp-server.js` ; une application qui avait déclaré l'ancien chemin le redéclare toute seule au démarrage.
+- **L'installateur** ne contient que le JavaScript compilé (`out/`), les pages et les assets de `frontend/`, `resources/` et `config.json` : pas les sources `.ts` (`files` de `build` dans `package.json`).
+- **Les types des données** (réglages, état, prospects, brouillons, recherche, moteur) sont dans `backend/types.ts` et `backend/types/` ; ceux de l'interface (réponses de l'API) dans `frontend/js/types.ts`.
 
 ## L'API locale
 Toutes les réponses : `{ success: true, ...data }` ou `{ success: false, error, type }`. Les requêtes autres que GET exigent l'en-tête `X-Prospection: 1`.
@@ -98,7 +131,7 @@ Toutes les réponses : `{ success: true, ...data }` ou `{ success: false, error,
 - `%APPDATA%\prospection-auto\local.json` (ce PC) : `dataFolder`, `promptsFolder`, `sendingMode`, `autoStart`, `mcpPath`, `mcpDeclaredAt`.
 
 ## Passage à la 1.2.0 (code et données en anglais)
-Au premier lancement de la 1.2.0, `backend/services/migration.mjs` convertit une seule fois ce qu'une version plus ancienne a écrit :
+Au premier lancement de la 1.2.0, `backend/services/migration.ts` convertit une seule fois ce qu'une version plus ancienne a écrit :
 - `Données\prospects.json` (version 1 vers 2 : clés, statuts `pret` vers `ready`, étapes `j0`, `r1`, `r2` vers `first`, `followUp1`, `followUp2`...) ; l'ancien fichier est gardé en `prospects.v1-backup.json` ;
 - `Données\reglages.json` devient `Données\settings.json` (copie en `reglages.v1-backup.json`) ; `envois-mcp.jsonl` devient `mcp-sends.jsonl` ;
 - sur ce PC : `local.json` et `google.json` (clés), `consommation-claude.json` devient `claude-usage.json`, `journaux\` devient `logs\`.
@@ -120,4 +153,5 @@ Pièges :
 - Tout le code en anglais : noms de fichiers, fonctions, variables, classes CSS, routes de l'API, clés des données, commentaires et messages de commit. Seuls les textes lus par l'utilisateur (interface, e-mails, rapports, consignes données à Claude) sont en français, au tutoiement, sans tiret long.
 - Pas de secret dans le code ni dans Git (`.gitignore` : `*.secret`, `local.json`, `.env`, journaux, `dist/`).
 - Rien de personnel dans le code : tout ce qui concerne l'utilisateur passe par le profil et les réglages.
-- Fichiers courts et lisibles ; une responsabilité par service ; réponses de l'API toujours au format `{ success, ... }`.
+- Fichiers courts et lisibles (moins de 300 lignes) ; une responsabilité par service ; réponses de l'API toujours au format `{ success, ... }`.
+- `npm run typecheck` à zéro erreur avant chaque commit.

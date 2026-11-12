@@ -20,3 +20,27 @@ body.in-app .topbar { padding-right: 170px; height: 56px; }
 .status-dot.error::before { background: var(--red); box-shadow: 0 0 10px var(--red); }
 .status-dot.pending::before { background: var(--yellow); box-shadow: 0 0 10px var(--yellow); animation: pulse 1.4s infinite; }
 @keyframes pulse { 50% { opacity: 0.35; } }
+
+/* Narrow window: the tabs go on a second line of the bar. In the app, the window buttons of Windows cover the top right
+   corner (about 150 px): nothing is put there */
+@media (max-width: 760px) {
+    .topbar, body.in-app .topbar { flex-wrap: wrap; height: auto; gap: 0 0.8rem; padding: 0 var(--gutter); }
+    .topbar > img, .topbar > .display { margin: 10px 0; }
+    .topbar > .display { flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .topbar nav { order: 3; width: 100%; height: 44px; justify-content: space-between; gap: 0; }
+    .tab { padding: 0 0.45rem; letter-spacing: 0.08em; white-space: nowrap; }
+    .tab.active::after { left: 0.45rem; right: 0.45rem; }
+    .topbar .right { gap: 0.7rem; }
+    body.in-app .topbar .right { margin-right: 150px; }
+}
+@media (max-width: 560px) {
+    body.in-app .topbar .right { order: 4; width: 100%; margin: 0; padding: 0.3rem 0 0.6rem; justify-content: space-between; }
+    body.in-app .topbar > .display { margin-right: 150px; }
+}
+@media (max-width: 480px) {
+    .topbar > .display { display: none; }
+    body.in-app .topbar > img { margin-right: auto; }
+    .tab { padding: 0 0.3rem; font-size: 0.7rem; letter-spacing: 0.05em; }
+    .tab.active::after { left: 0.3rem; right: 0.3rem; }
+    .tab .badge { min-width: 1.15rem; height: 1.15rem; margin-left: 0.2rem; font-size: 0.66rem; }
+}

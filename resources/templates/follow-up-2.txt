@@ -1,0 +1,9 @@
+{{BONJOUR}}
+
+Dernier message de ma part, promis.
+
+Je peux vous préparer gratuitement une maquette de page d'accueil pour {{ENTREPRISE}}, prête sous 48 h, pour que vous voyiez concrètement le résultat. Ou, si vous préférez, un appel de 15 minutes.
+
+{{RESERVATION}}
+
+Bien à vous,

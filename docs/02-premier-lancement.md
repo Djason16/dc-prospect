@@ -1,30 +1,30 @@
 # 2. Premier lancement
 
-Au premier lancement, l'écran **Aujourd'hui** affiche la **mise en route** en 3 étapes. DC Prospect ne cherche rien et n'envoie rien tant qu'elles ne sont pas faites.
+Au premier lancement, l'écran **Aujourd'hui** affiche la **mise en route** en 4 étapes, avec en haut la liste de ce qu'il faut (profil, zone, formule, adresse d'envoi) : chaque point se coche quand il est fait. DC Prospect ne cherche rien et n'envoie rien tant qu'elles ne sont pas faites.
 
 ## Étape 1 : qui tu es (ton profil)
 | Champ | Exemple | À quoi il sert |
 |---|---|---|
 | Prénom, Nom | Marie, Dupont | Signature et e-mails écrits en ton nom |
 | Adresse pro d'envoi | contact@mon-domaine.fr | L'adresse que voient les prospects |
-| Ton activité | photographe indépendante | Comment Claude te présente |
+| Ton activité | photographe indépendante | Comment l'IA te présente |
 | Ta ville | Lyon (Rhône) | « basée à ... » dans les e-mails |
-| Ce que tu proposes | Shooting produit dès 290 €, abonnement réseaux sociaux... | Ce que Claude met en avant ; choix de l'offre adaptée à chaque prospect |
+| Ce que tu proposes | Shooting produit dès 290 €, abonnement réseaux sociaux... | Ce que l'IA met en avant ; choix de l'offre adaptée à chaque prospect |
 
 Clique sur **Enregistrer mon profil**. Tu complèteras plus tard (site, téléphone, titre, signes du besoin, signatures HTML) dans Réglages : voir [4. Réglages](04-reglages.md).
 
 ## Étape 2 : où chercher (ta zone)
-- **Nom de la zone** : ce que tu veux (« Oise », « Lyon et alentours »).
-- **Départements ou codes postaux** : `60`, ou `69, 01`, ou `60200, 60150, 60280`.
+Le plus simple : **ta ville et un rayon** (par exemple Compiègne, 20 km), puis **Créer la zone**. DC Prospect prend toutes les communes dont le centre est dans le cercle, y compris dans les départements voisins. Sinon, déplie « Ou par départements et codes postaux » (60, 75... ou 60200, 60150...). D'autres zones s'ajoutent dans Réglages, Avancé, Zones : elles tournent, une par semaine.
 
-Clique sur **Enregistrer la zone**. Tu peux en ajouter d'autres ensuite : chaque semaine, DC Prospect prend la zone suivante (Réglages, Avancé, Zones).
+## Étape 3 : qui écrit tes e-mails (ta formule)
+Clique sur une formule (détail dans [4. Réglages](04-reglages.md#formule)) :
+- **Gratuit, sur ce PC** (conseillé si tu n'as pas d'abonnement Claude) : clique sur **Télécharger l'IA intégrée**. Environ 2,5 Go, une seule fois, 5 à 20 minutes selon ta connexion. Tu peux passer à l'étape 4 pendant le téléchargement : les modèles d'e-mails écrivent en attendant.
+- **Avec mon abonnement Claude** : « Pas installé » : clique sur **Installer Claude Code** (une fenêtre PowerShell lance l'installateur officiel d'Anthropic), puis **Actualiser**. « Pas connecté » : clique sur **Se connecter à Claude**, connecte-toi dans ton navigateur, puis reviens et clique sur **Actualiser**.
+- **Avec une clé API** : choisis le fournisseur, colle la clé, **Enregistrer**.
 
-## Étape 3 : tes comptes
-### Claude
-- « Pas installé » : clique sur **Installer Claude Code** (une fenêtre PowerShell lance l'installateur officiel d'Anthropic), puis **Actualiser**.
-- « Pas connecté » : clique sur **Se connecter à Claude**. Une petite fenêtre et ton navigateur s'ouvrent : connecte-toi avec ton compte Claude, puis reviens et clique sur **Actualiser**.
+## Étape 4 : d'où partent tes e-mails
+DC Prospect regarde l'adresse de ton profil et prépare tout : il choisit « Par mon Gmail » pour une adresse Gmail ou Google Workspace, sinon « Par ma boîte directement » avec le serveur de ton hébergeur déjà rempli. Un encadré « Pour ton adresse » donne seulement les étapes de ton fournisseur. Il ne reste en général qu'à coller un mot de passe. Les détails ci-dessous servent si tu veux comprendre ou si quelque chose bloque.
 
-### L'envoi des e-mails
 Deux façons, au choix (le prospect voit toujours ton adresse pro) :
 
 **Par ton Gmail (conseillé)**
