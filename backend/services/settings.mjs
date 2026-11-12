@@ -5,10 +5,10 @@ import path from 'node:path'
 import { cfg, dataFolder, isoWeek } from './base.mjs'
 
 const file = path.join(dataFolder, 'settings.json')
-const EDITABLE = ['zones', 'trades', 'maxSearchesPerDay', 'readyReserve', 'firstEmailsPerDay', 'maxEmailsPerDay', 'sendWindows', 'followUpDays', 'searchModel', 'writingModel', 'sender', 'smtp', 'imap', 'profile', 'sendDays', 'searchDays', 'gapMinutes', 'skipHolidays']
+const EDITABLE = ['zones', 'trades', 'maxSearchesPerDay', 'readyReserve', 'firstEmailsPerDay', 'maxEmailsPerDay', 'sendWindows', 'followUpDays', 'searchModel', 'writingModel', 'sender', 'smtp', 'imap', 'profile', 'sendDays', 'searchDays', 'gapMinutes', 'skipHolidays', 'ai', 'searchEngine', 'writingEngine', 'warmup', 'localModel', 'pauseUntil', 'dailyDigest', 'autoApproveFollowUps']
 
 // Profile of the user (whoever uses the app): who writes the e-mails, what is sold, the signatures
-export const PROFILE_FIELDS = ['firstName', 'lastName', 'company', 'activity', 'offer', 'website', 'city', 'phone', 'title', 'need', 'mainSignature', 'secondSignature', 'secondSignatureName']
+export const PROFILE_FIELDS = ['firstName', 'lastName', 'company', 'activity', 'offer', 'website', 'city', 'phone', 'title', 'need', 'bookingUrl', 'mainSignature', 'secondSignature', 'secondSignatureName']
 export const profile = () => cfg.profile || {}
 // First name and last name are separate fields; the full name is used in the e-mails and the signature
 export const fullName = (p = profile()) => [p.firstName, p.lastName].filter(Boolean).join(' ')
@@ -61,6 +61,7 @@ export function saveSettings(r) {
         const p = { ...profile() }
         for (const k of PROFILE_FIELDS) if (typeof r.profile[k] === 'string') p[k] = r.profile[k].trim().slice(0, /Signature$/.test(k) ? 60000 : 2000)
         if (p.website && !/^https?:\/\//.test(p.website)) p.website = 'https://' + p.website
+        if (p.bookingUrl && !/^https?:\/\//.test(p.bookingUrl)) p.bookingUrl = 'https://' + p.bookingUrl
         changes.profile = p
         if (typeof r.profile.address === 'string') {
             const address = r.profile.address.trim().toLowerCase()
@@ -114,6 +115,27 @@ export function saveSettings(r) {
         changes.gapMinutes = [a, b]
     }
     if (typeof r.skipHolidays === 'boolean') changes.skipHolidays = r.skipHolidays
+
+    // Engines (Settings, Moteur): the AI provider and its models, search and writing with or without AI
+    if (r.ai) {
+        const providers = ['claude-code', 'anthropic', 'openai', 'local', 'gemini']
+        if (!providers.includes(r.ai.provider)) return 'Moteur inconnu.'
+        const text = (v, max = 200) => String(v || '').trim().slice(0, max)
+        const baseUrl = text(r.ai.baseUrl)
+        if (baseUrl && !/^https?:\/\/[^\s]+$/.test(baseUrl)) return "Adresse de l'API invalide (https://...)."
+        changes.ai = { provider: r.ai.provider, baseUrl, searchModel: text(r.ai.searchModel, 80), writingModel: text(r.ai.writingModel, 80) }
+    }
+    if (r.searchEngine) changes.searchEngine = r.searchEngine === 'free' ? 'free' : 'ai'
+    if (r.writingEngine) changes.writingEngine = r.writingEngine === 'templates' ? 'templates' : 'ai'
+    if (r.dailyDigest !== undefined) changes.dailyDigest = !!r.dailyDigest
+    if (r.autoApproveFollowUps !== undefined) changes.autoApproveFollowUps = !!r.autoApproveFollowUps
+    if (r.pauseUntil !== undefined) { if (r.pauseUntil && !/^\d{4}-\d{2}-\d{2}$/.test(r.pauseUntil)) return 'Date de reprise invalide.'; changes.pauseUntil = r.pauseUntil || null }
+    if (r.localModel) { if (!['qwen3-4b', 'ministral-8b'].includes(r.localModel)) return 'Modèle inconnu.'; changes.localModel = r.localModel }
+    if (r.warmup) {
+        const was = cfg.warmup || {}
+        // the warm-up starts the day it is switched on
+        changes.warmup = { enabled: !!r.warmup.enabled, startedOn: r.warmup.enabled ? (was.enabled && was.startedOn ? was.startedOn : new Date().toISOString().slice(0, 10)) : null }
+    }
     let current = {}
     try { current = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
     fs.mkdirSync(dataFolder, { recursive: true })

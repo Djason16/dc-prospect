@@ -1,0 +1,7 @@
+{{BONJOUR}}
+
+{En cherchant|En regardant} {{RECHERCHE}}, je suis tombé sur {{ENTREPRISE}}, et {{CONSTAT}}.
+
+Je suis {{NOM}}, {{ACTIVITE}} à {{MA_VILLE}}. {Ça vous dirait que je vous montre en 15 minutes comment l'améliorer ?|Voulez-vous que je vous montre en 15 minutes ce que je changerais ?}
+
+Bien à vous,

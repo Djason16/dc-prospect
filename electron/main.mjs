@@ -34,6 +34,13 @@ function openWindow() {
         return { action: 'deny' }
     })
     mainWindow.webContents.on('will-navigate', (e, url) => { if (!url.startsWith(engine.address)) { e.preventDefault(); shell.openExternal(url) } })
+    // « Ajouter un rappel à mon agenda »: the .ics opens straight in the calendar of the PC (Outlook, Calendrier...)
+    mainWindow.webContents.session.on('will-download', (e, item) => {
+        if (!/\.ics$/i.test(item.getFilename())) return
+        const file = path.join(app.getPath('temp'), item.getFilename())
+        item.setSavePath(file)
+        item.once('done', (ev, state) => { if (state === 'completed') shell.openPath(file) })
+    })
     mainWindow.on('close', (e) => {
         if (app.quitting) return
         e.preventDefault()

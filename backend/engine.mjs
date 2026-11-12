@@ -5,9 +5,10 @@ import { cfg, today, isSearchDay, loadState, saveState, log } from './services/b
 import { syncReplies, search, prepareBatch, sendNext, forgetOldLeads, toApprove } from './services/prospecting.mjs'
 import { writeDailyReport, writeTrackingTable } from './services/report.mjs'
 import { startServer } from './server.mjs'
-import { sendingReady } from './services/mail.mjs'
+import { sendingReady, send } from './services/mail.mjs'
 import { isProfileComplete, activeZones } from './services/settings.mjs'
 import { machine, version, takeLock, releaseLock, cleanLogs } from './services/system.mjs'
+import { wakeReminders, backupState } from './services/followThrough.mjs'
 
 export const address = `http://localhost:${cfg.port}`
 let host = { open() {}, notify() {} }
@@ -61,9 +62,11 @@ export const app = {
         const step = (t) => { this.progress = t; log(t) }
         try {
             cleanLogs()
+            backupState() // copy of the prospects, once a day, the last 14 kept
             step('lecture des réponses et des STOP')
             await this.sync()
             forgetOldLeads(this.state)
+            if (wakeReminders(this.state)) this.changed() // the « plus tard » whose date has come
             // research and sending each follow their own days (Settings, Calendar)
             if (isSearchDay(day) || force) {
                 step('recherche de nouveaux prospects')
@@ -79,7 +82,7 @@ export const app = {
             if (!isProfileComplete()) this.error = "Remplis ton profil (Aujourd'hui, Mise en route) : DC Prospect en a besoin pour chercher et écrire."
             else if (!activeZones().length) this.error = "Choisis au moins une zone (Aujourd'hui, Mise en route)."
             else if (!sendingReady()) this.error = "Envoi pas encore branché : ton Gmail ou ta boîte pro (Aujourd'hui, Mise en route). Rien ne peut partir avant."
-            if (!this.claudeOk) this.error = 'Claude ne répond pas (connexion ou limite de l\'abonnement atteinte) : la recherche reprendra demain.'
+            if (!this.claudeOk) this.error = 'Le moteur de recherche ne répond pas (Claude déconnecté, limite de l\'abonnement ou de la clé API atteinte, quota de recherche web épuisé) : la recherche reprendra demain. Réglages, Moteur pour en changer.'
             this.state.lastDay = day
             this.changed()
             await this.writeReports()
@@ -91,6 +94,13 @@ export const app = {
             this.busy = false; this.progress = ''
         }
         const approve = toApprove(this.state).length, replies = toAnswer(this.state).length
+        // summary by e-mail to myself (Réglages, Application), once a day, only when something waits for me
+        if (cfg.dailyDigest && (approve || replies) && this.state.digestOn !== day && sendingReady()) {
+            this.state.digestOn = day
+            const lines = [approve && `- ${approve} e-mail(s) à relire et valider`, replies && `- ${replies} prospect(s) t'ont répondu`].filter(Boolean)
+            send({ to: cfg.sender.address, subject: `DC Prospect : ${[approve && `${approve} à valider`, replies && `${replies} réponse(s)`].filter(Boolean).join(', ')}`, body: `Bonjour,\n\nCe matin dans DC Prospect :\n${lines.join('\n')}\n\nOuvre DC Prospect sur ton PC pour t'en occuper : rien ne part sans ton accord.\n\nBien à vous,`, stop: false })
+                .then(() => this.changed()).catch((e) => log('Résumé par e-mail non envoyé :', e.message))
+        }
         if ((approve || replies || this.error) && this.pageOpenedOn !== day) {
             this.pageOpenedOn = day
             openPage()

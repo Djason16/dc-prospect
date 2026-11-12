@@ -1,11 +1,12 @@
 // Entry point of the interface of DC Prospect: frame, data refresh (every 15 s), clicks
 import { $, $$ } from './utils/dom.js'
+import { downloadReminder } from './utils/calendar.js'
 import { store } from './stores/state.js'
 import { api, ensureSuccess, hostAction } from './api.js'
 import { mountAppShell, renderAppShell, showView } from './components/layout/AppShell.js'
 import { runAction, toast, confirmClick } from './components/ui/Toast.js'
 import { renderToday } from './components/views/Today.js'
-import { renderProspects } from './components/views/Prospects.js'
+import { renderProspects, reopenTable } from './components/views/Prospects.js'
 import { renderSettings, loadSettings, onSettingsClick, onSettingsChange } from './components/views/Settings.js'
 import { renderHelp } from './components/views/Help.js'
 
@@ -67,9 +68,9 @@ function goTo(view) {
     else render()
 }
 
-// while I type in an e-mail, the refresh does not redraw it
-document.addEventListener('focusin', (e) => { if (e.target.closest('#to-approve')) store.editing = true })
-document.addEventListener('focusout', () => setTimeout(() => (store.editing = !!document.activeElement?.closest?.('#to-approve')), 50))
+// while I type in an e-mail or an answer, the refresh does not redraw it
+document.addEventListener('focusin', (e) => { if (e.target.closest('#to-approve')) store.editing = true; if (e.target.closest('#replies-block')) store.replying = true })
+document.addEventListener('focusout', () => setTimeout(() => { store.editing = !!document.activeElement?.closest?.('#to-approve'); store.replying = !!document.activeElement?.closest?.('#replies-block') }, 50))
 
 document.addEventListener('click', async (ev) => {
     const b = ev.target.closest('button')
@@ -81,6 +82,66 @@ document.addEventListener('click', async (ev) => {
         if (b.dataset.track === 'declined' && !confirmClick(b, 'Confirmer : ne plus lui écrire')) return
         await runAction(b, () => ensureSuccess(api.post('/tracking', { id: b.dataset.id, action: b.dataset.track })), 'Noté')
         return refresh()
+    }
+    // Card of a prospect (Prospects): open or close, save my notes
+    if (b.dataset.reminder) { downloadReminder({ title: b.dataset.title, details: b.dataset.details }); toast('Rappel prêt : ouvre le fichier pour l\'ajouter à ton agenda (demain 10 h, modifiable)'); return }
+    if (b.dataset.sort) { const k = b.dataset.sort; store.sort = { key: k, desc: store.sort?.key === k ? !store.sort.desc : false }; return reopenTable() }
+    if (b.dataset.detail) { store.openDetail = store.openDetail === b.dataset.detail ? null : b.dataset.detail; return reopenTable() }
+    if (b.dataset.saveNotes) {
+        await runAction(b, () => ensureSuccess(api.post('/notes', { id: b.dataset.saveNotes, text: $('#notes-' + CSS.escape(b.dataset.saveNotes)).value })), 'Notes enregistrées')
+        return refresh()
+    }
+    // A new version of an e-mail to approve
+    if (b.hasAttribute('data-rewrite')) {
+        const card = b.closest('.card')
+        const r = await runAction(b, () => ensureSuccess(api.post('/drafts/rewrite', { id: card.dataset.id, step: card.dataset.step })), 'Nouvelle version prête : relis-la')
+        if (r) { store.editing = false; refresh() }
+        return
+    }
+    // My own list, never contact, erasure, outcome of a call (Prospects)
+    if (b.hasAttribute('data-import')) {
+        const file = $('#import-file').files?.[0]
+        if (!file) { toast('Choisis d\'abord ton fichier CSV', true); return }
+        const csv = await file.text()
+        const r = await runAction(b, () => ensureSuccess(api.post('/import', { csv })), (x) => `${x.rows} lignes en cours de vérification : les prospects prêts arrivent dans quelques minutes (historique sur l'accueil)`)
+        if (r) $('#import-file').value = ''
+        return
+    }
+    if (b.hasAttribute('data-do-not-contact')) {
+        const r = await runAction(b, () => ensureSuccess(api.post('/do-not-contact', { text: $('#do-not-contact').value })), (x) => `${x.added} ajouté(s) : DC Prospect ne leur écrira jamais`)
+        if (r) { $('#do-not-contact').value = ''; refresh() }
+        return
+    }
+    if (b.dataset.restore) {
+        await runAction(b, () => ensureSuccess(api.post('/restore', { id: b.dataset.restore })), 'Remis dans la réserve, avec un nouvel e-mail')
+        return refresh()
+    }
+    if (b.dataset.erase) {
+        if (!confirmClick(b, 'Confirmer l\'effacement')) return
+        await runAction(b, () => ensureSuccess(api.post('/erase', { id: b.dataset.erase })), 'Données effacées ; son adresse reste seulement dans la liste STOP')
+        return refresh()
+    }
+    if (b.dataset.call) {
+        await runAction(b, () => ensureSuccess(api.post('/calls', { id: b.dataset.id, outcome: b.dataset.call })), b.dataset.call === 'interested' ? 'Noté : il est dans « Ils ont répondu »' : 'Noté')
+        return refresh()
+    }
+    // Answer to a prospect who replied: prepared (AI or template), changed if needed, sent in the same thread
+    if (b.dataset.replyDraft) {
+        const r = await runAction(b, () => ensureSuccess(api.post('/replies/draft', { id: b.dataset.replyDraft })), 'Réponse préparée : relis-la avant de l\'envoyer')
+        if (r) { store.replying = false; refresh() }
+        return
+    }
+    if (b.dataset.replyKind) {
+        const r = await runAction(b, () => ensureSuccess(api.post('/replies/kind', { id: b.dataset.id, kind: b.dataset.replyKind })), 'Type corrigé : DC Prospect en tient compte')
+        if (r) { store.replying = false; refresh() }
+        return
+    }
+    if (b.dataset.replySend) {
+        const body = $('[data-answer]', b.closest('.card'))?.value || ''
+        if (!confirmClick(b, 'Confirmer l\'envoi')) return
+        const r = await runAction(b, () => ensureSuccess(api.post('/replies/send', { id: b.dataset.replySend, body })), 'Réponse envoyée')
+        if (r) { store.replying = false; refresh() }
+        return
     }
     if (b.dataset.draft) {
         const card = b.closest('.card'), d = { id: card.dataset.id, step: card.dataset.step, action: b.dataset.draft }

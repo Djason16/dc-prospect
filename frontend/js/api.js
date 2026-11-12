@@ -26,7 +26,7 @@ export const api = {
     get: (route) => call('GET', route),
     post: (route, body) => call('POST', route, body),
     put: (route, body) => call('PUT', route, body),
-    delete: (route) => call('DELETE', route),
+    delete: (route, body) => call('DELETE', route, body),
 }
 
 // For actions with a button: throws the API error so the caller can show it

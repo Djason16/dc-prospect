@@ -1,0 +1,9 @@
+{{BONJOUR}}
+
+{Je me permets de revenir vers vous avec un conseil, que vous fassiez appel à moi ou non.|Je reviens vers vous avec un conseil utile, que l'on travaille ensemble ou non.}
+
+{{CONSEIL}}
+
+{Si vous voulez, je regarde ce point avec vous pour {{ENTREPRISE}}, en 15 minutes.|Je peux regarder ce point avec vous pour {{ENTREPRISE}}, en 15 minutes, si cela vous dit.}
+
+Bien à vous,

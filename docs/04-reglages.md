@@ -14,15 +14,35 @@ Ce qui est **partagé entre tes PC** (dans le dossier de données, `Données\set
 | Nom de l'entreprise | Si différent de ton nom |
 | Ton site | Seul lien autorisé dans le 1er e-mail ; mis en lien automatiquement |
 | Téléphone, Titre | Signature simple (si tu n'as pas collé de signature HTML) |
-| Ce que tu proposes | Offres, prix de départ, conditions : Claude choisit l'offre adaptée au prospect |
-| À quoi on voit qu'un prospect a besoin de toi | Ce que Claude cherche sur le web. Par défaut (sites web) : pas de site, site daté ou lent, pas adapté au téléphone, Wix, Google Sites ou Canva, réservation seulement via une plateforme, peu de contenu. Écris le tien si tu vends autre chose (ex. photographe : pas de photos pro, photos de mauvaise qualité sur le site et les réseaux) |
+| Lien de prise de rendez-vous | Facultatif (Calendly, Google Agenda...) : proposé dans les réponses préparées aux prospects intéressés |
+| Ce que tu proposes | Offres, prix de départ, conditions : l'IA (ou le modèle) choisit l'offre adaptée au prospect |
+| À quoi on voit qu'un prospect a besoin de toi | Ce que l'IA cherche sur le web. Par défaut (sites web) : pas de site, site daté ou lent, pas adapté au téléphone, Wix, Google Sites ou Canva, réservation seulement via une plateforme, peu de contenu. Écris le tien si tu vends autre chose (ex. photographe : pas de photos pro, photos de mauvaise qualité sur le site et les réseaux) |
 | Ma signature HTML | Colle le code HTML de ta signature (tableaux et styles en ligne, comme pour Gmail) ; sinon DC Prospect en fait une simple. **Voir ma signature** pour l'aperçu |
 | Deuxième signature | Facultatif (ex. « Service comptabilité ») : utilisée par le MCP pour les devis et factures |
 
+## Formule
+Comment DC Prospect cherche et écrit. Trois formules, à changer à tout moment :
+
+| Formule | Ce qu'il faut | Ce que ça fait |
+|---|---|---|
+| **Gratuit, sur ce PC** (conseillé sans abonnement Claude) | Rien : un clic télécharge une fois l'IA intégrée. Deux modèles sous licence Apache 2.0 : Qwen3 4B (rapide et fiable, 2,5 Go, conseillé) ou Ministral 3 8B de Mistral (plus naturel, 5,2 Go, plus lent) | L'IA intégrée écrit les e-mails et les réponses sur ton PC. Les prospects sont trouvés sans IA : registre officiel, site retrouvé à partir du nom, lecture du site. Pendant le téléchargement, les modèles d'e-mails prennent le relais |
+| **Gratuit, en ligne (Google)** | Une clé gratuite sur aistudio.google.com/apikey (« Create API key ») | Gemini cherche les prospects sur Google et écrit les e-mails ; limite gratuite par jour (la recherche reprend le lendemain). Google peut utiliser les échanges de l'offre gratuite pour améliorer ses services |
+| **Avec mon abonnement Claude** | Claude Code installé et connecté (boutons dans l'appli) | Claude cherche les prospects sur le web et écrit les e-mails |
+| **Avec une clé API** | Une clé Anthropic, ou OpenAI, Mistral, Groq, OpenRouter, Cerebras (adresses prêtes en un clic ; Groq, Mistral, OpenRouter et Cerebras ont une offre gratuite limitée), ou Ollama sur ce PC sans clé | Comme Claude, payé à l'usage ; les IA autres qu'Anthropic ne cherchent pas sur le web (recherche sans IA) |
+
+**Options pour aller plus loin** (repliées) :
+- **Trouver les prospects** avec ou sans IA. Sans IA, une clé Brave (brave.com/search/api, crédit gratuit de 5 $ par mois, environ 1 000 recherches) retrouve beaucoup plus de sites que la recherche à partir du nom.
+- **Écrire les e-mails** avec l'IA ou avec tes modèles (`resources/templates`, ou sous-dossier `modèles` de ton dossier de prompts).
+
+Dans tous les cas, ce qui compte (registre, site, e-mail publié) est vérifié par DC Prospect lui-même, pas par l'IA.
+
+**Mesure de vitesse Google (facultatif)** : avec une clé gratuite de l'API PageSpeed Insights (console.cloud.google.com, un projet, activer « PageSpeed Insights API », Identifiants, Créer une clé API), chaque site retenu est mesuré par Google sur téléphone : temps d'affichage et note de référencement. Sans clé, cette mesure est simplement sautée.
+
 ## Comptes
-- **Claude** : installer, se connecter, se déconnecter, actualiser (voir [2. Premier lancement](02-premier-lancement.md)).
 - **Envoi des e-mails** : « Par mon Gmail » ou « Par la boîte pro directement » ; brancher ou débrancher Gmail ; mot de passe de la boîte ; **M'envoyer un e-mail de test**.
-- **Tout vérifier** : teste l'envoi et la lecture, Claude, le registre des entreprises et le dossier de données, sans rien envoyer.
+- **Délivrabilité** : **Vérifier mon domaine** contrôle MX, SPF, DKIM et DMARC de l'adresse d'envoi et dit quoi corriger. Gmail, Yahoo et Outlook refusent de plus en plus les e-mails d'un domaine sans SPF, DKIM et DMARC alignés.
+- **Montée en charge** : à cocher pour une adresse neuve ou jamais utilisée pour prospecter : 5 premiers e-mails par jour la 1re semaine, puis 5 de plus chaque semaine jusqu'au volume réglé.
+- **Tout vérifier** : teste l'envoi et la lecture, le moteur, le registre des entreprises et le dossier de données, sans rien envoyer.
 
 ## Application
 - Version, « Démarrer avec Windows », installer une mise à jour, ouvrir le dossier des données, quitter l'application.
@@ -32,12 +52,12 @@ Ce qui est **partagé entre tes PC** (dans le dossier de données, `Données\set
 Une ligne par zone : nom, départements (`60, 75`), codes postaux (`60200, 60150`), active ou en pause. Une zone active par semaine, chacune son tour (la zone de la semaine est affichée). Pour une zone en départements, DC Prospect cherche dans les communes de 2 500 habitants et plus ; pour une zone en codes postaux, dans toutes les communes données.
 
 ### Métiers ciblés
-Une ligne par métier : nom (ce que Claude tape dans la recherche, ex. « Plombier chauffagiste »), codes NAF du registre (facultatif, pour information), actif ou non. La barre montre le **rendement** : la part de recherches qui donnent un prospect utile. Les métiers qui rapportent passent en premier, les autres gardent une chance.
+Une ligne par métier : nom (commence à taper, une liste de 50 métiers courants est proposée et remplit les codes NAF ; ce qui est tapé dans la recherche, ex. « Plombier chauffagiste »), codes NAF du registre (recommandé : ils servent à prendre dans le registre la liste des entreprises qui acceptent la prospection, avant toute recherche), actif ou non. La barre montre le **rendement** : la part de recherches qui donnent un prospect utile. Les métiers qui rapportent passent en premier, les autres gardent une chance.
 
 ### Volumes
 | Réglage | Par défaut | Effet |
 |---|---|---|
-| Recherches web par jour | 10 | Une recherche = un métier dans une ville, jusqu'à 6 entreprises avec e-mail. À baisser si ton abonnement Claude sature |
+| Recherches web par jour | 10 | Une recherche = un métier dans une ville, jusqu'à 6 entreprises avec e-mail. À baisser si ton abonnement ou ton quota de recherche sature |
 | Réserve de prospects prêts | 30 | 1ers e-mails rédigés d'avance |
 | E-mails par jour au maximum | 20 | Toutes étapes confondues |
 
@@ -46,7 +66,7 @@ Le nombre de 1ers e-mails de chaque jour d'envoi se règle dans le Calendrier, c
 ### Calendrier
 | Réglage | Par défaut | Effet |
 |---|---|---|
-| Jours de recherche | lundi à vendredi | Les jours où Claude cherche de nouveaux prospects |
+| Jours de recherche | lundi à vendredi | Les jours où DC Prospect cherche de nouveaux prospects |
 | Jours d'envoi | mardi, mercredi, jeudi | Les jours où le lot est préparé et envoyé (au moins un) |
 | 1ers e-mails par jour d'envoi | 15 mardi, 0 mercredi, 15 jeudi | Les relances passent avant, dans la limite du maximum par jour |
 | Créneaux d'envoi | 08:00 - 10:00 et 13:30 - 15:00 | Ajoute ou retire des créneaux ; le début avant la fin |
@@ -86,3 +106,5 @@ DC Prospect utilise ses prompts neutres (`resources/prompts`), remplis avec ton 
 | Relance | « Relance de prospection » ou « Follow-up » |
 
 Les règles automatiques (pas de signature tapée, pas de phrase STOP, JSON) s'ajoutent toujours à tes prompts.
+
+Même principe pour la rédaction sans IA : un sous-dossier `modèles` dans ce dossier, avec des fichiers nommés comme ceux de `resources/templates` (`first-email.txt`, `follow-up-1.txt`, `follow-up-2.txt`, `reply.txt`). Les variables disponibles sont décrites dans `resources/templates/LISEZ-MOI.txt`.

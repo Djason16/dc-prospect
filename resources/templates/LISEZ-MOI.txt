@@ -1,0 +1,14 @@
+Modèles d'e-mails de la rédaction sans IA (Réglages, Moteur, « Rédaction par modèles »).
+Pour les changer : copie ces fichiers dans un dossier « modèles » de ton dossier de prompts (Réglages, Avancé), garde les
+mêmes noms, et modifie-les. Les mots entre {{ }} sont remplis tout seuls :
+  {{BONJOUR}}     « Bonjour Prénom, » ou « Bonjour, »
+  {{ENTREPRISE}}  nom du prospect          {{METIER}}  son métier          {{VILLE}}  sa ville
+  {{RECHERCHE}}   « coiffure Compiègne » sur Google (ou « les entreprises de Compiègne » sans métier)
+  {{CONSTAT}}     ce qui a été vérifié sur son site (« j'ai remarqué que votre site n'est pas adapté au téléphone »)
+  {{CONSEIL}}     un conseil utile lié à ce constat (relance 1)
+  {{NOM}} {{ACTIVITE}} {{MA_VILLE}}  ton profil      {{OFFRE}}  la 1re ligne de ce que tu proposes
+  {{ACCROCHE}}    une phrase qui reprend ce que l'entreprise dit d'elle sur son site (vide si rien de clair)
+  {{RESERVATION}} ton lien de prise de rendez-vous (profil), sinon une phrase pour choisir un moment
+Variantes : {phrase 1|phrase 2|phrase 3} prend une des phrases au hasard, pour que deux e-mails ne soient jamais
+identiques (les messageries se méfient des textes envoyés en série).
+Règles : pas de « nous », pas de tiret long, pas de signature ni de phrase STOP (ajoutées toutes seules), finir par « Bien à vous, ».

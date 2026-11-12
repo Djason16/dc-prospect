@@ -28,7 +28,16 @@ dc-prospect/
 │   │   ├── migration.mjs       conversion une seule fois des fichiers écrits avant la 1.2.0 (clés en français)
 │   │   ├── settings.mjs        profil, zones, métiers, volumes (Données\settings.json), zone de la semaine
 │   │   ├── prospecting.mjs     réponses, recherche, lot du jour, envoi, oubli à 12 mois, rendement par métier
-│   │   ├── claude.mjs          appels à Claude Code, prompts (rôles), contrôle des textes, connexion Claude
+│   │   ├── claude.mjs          prompts de recherche et de rédaction par l'IA (rôles), contrôle des textes
+│   │   ├── ai.mjs              moteurs d'IA interchangeables : Claude Code, API Anthropic, API compatible OpenAI
+│   │   ├── discovery.mjs       recherche sans IA : registre + API Brave (site de chaque entreprise)
+│   │   ├── siteAudit.mjs       lecture des sites sans IA (e-mails, téléphones, constats, SEO), mesure PageSpeed
+│   │   ├── templates.mjs       rédaction sans IA par modèles (resources/templates, variantes {a|b})
+│   │   ├── localAi.mjs         IA intégrée : téléchargement du modèle (Qwen3 4B), exécution sur le PC (node-llama-cpp)
+│   │   ├── localWriter.mjs     rédaction par l'IA intégrée : brouillon des modèles, rendu naturel, contrôles (pas de chiffre inventé)
+│   │   ├── replies.mjs         réponses aux prospects : préparation et envoi dans la même conversation
+│   │   ├── learning.mjs        IA interne : chance de réponse, bandit des objets, type des réponses, santé de l'envoi
+│   │   ├── deliverability.mjs  SPF, DKIM, DMARC du domaine d'envoi, montée en charge, plafond du jour
 │   │   ├── web.mjs             communes d'une zone, contrôle MX, vérification au registre
 │   │   ├── companies.mjs       registre des entreprises (ancienne recherche, gardée pour référence)
 │   │   ├── mail.mjs            signatures, composition, envoi et lecture (Gmail ou boîte pro), tests

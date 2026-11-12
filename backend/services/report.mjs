@@ -6,7 +6,9 @@ import ExcelJS from 'exceljs'
 import { cfg, today, addDays, dateOf, frenchDate, dayName, isoWeek, nextSendDay, log } from './base.mjs'
 import { nextStep, toApprove, sendQueue, STEP_NAME } from './prospecting.mjs'
 import { usage } from './claude.mjs'
-import { zoneOfTheWeek } from './settings.mjs'
+import { zoneOfTheWeek, activeTrades } from './settings.mjs'
+import { dailyLimit } from './deliverability.mjs'
+import { SUBJECT_STYLES } from './claude.mjs'
 import { googleActive, googleOptions, writeSpreadsheet, publishReport } from './google.mjs'
 
 // Status of a prospect as shown in the table
@@ -35,6 +37,30 @@ export function figures(state, from = '0000-00-00', to = '9999-99-99', zone) {
         found: ps.filter((p) => within(p.addedOn) && p.status !== 'discarded').length,
         replyRate: pct(replies, contacted), meetingRate: pct(calls, replies), signingRate: pct(clients, proposals), stopRate: pct(stops, contacted),
     }
+}
+
+// Per trade: what the search brings and what replies (to keep the trades that work, drop the others)
+export function figuresByTrade(state) {
+    const names = [...new Set([...activeTrades().map((t) => t.name), ...state.prospects.map((p) => p.trade).filter(Boolean)])]
+    return names.map((trade) => {
+        const ps = state.prospects.filter((p) => p.trade === trade)
+        const contacted = ps.filter((p) => p.steps?.first).length
+        const replies = ps.filter((p) => p.reply && p.reply.kind !== 'no').length
+        return {
+            trade, found: ps.length, opposed: ps.filter((p) => /refuse la prospection/.test(p.reason || '')).length, toCall: ps.filter((p) => p.status === 'otherChannel').length,
+            hot: ps.filter((p) => p.level === 'CHAUD').length, contacted, replies, replyRate: contacted ? Math.round((replies / contacted) * 1000) / 10 : 0,
+            clients: ps.filter((p) => p.tracking?.client).length,
+        }
+    }).filter((r) => r.found)
+}
+
+// Per style of subject (A / B, alternated): which one gets more replies
+export function figuresBySubject(state) {
+    return Object.keys(SUBJECT_STYLES).map((style) => {
+        const ps = state.prospects.filter((p) => p.steps?.first && p.drafts?.first?.subjectStyle === style)
+        const replies = ps.filter((p) => p.reply && p.reply.kind !== 'no').length
+        return { style, contacted: ps.length, replies, replyRate: ps.length ? Math.round((replies / ps.length) * 1000) / 10 : 0 }
+    })
 }
 
 // [label, figure, goal, reached?, advice]
@@ -66,7 +92,7 @@ export function tabs(state) {
             columns: [
                 ['Date', 11], ['Entreprise', 26], ['Métier', 18], ['Ville', 16], ['Zone', 12], ['Contact', 18], ['E-mail pro', 28], ['Source', 16],
                 ['Signal', 30], ['Score', 7], ['J0', 11], ['Relance 1', 11], ['Relance 2', 11], ['Réponse', 34], ['Maquette envoyée', 11],
-                ['Appel', 11], ['Proposition', 11], ['Résultat', 14], ['STOP', 11], ['Statut', 18], ['Site', 26], ['Note Google', 14],
+                ['Appel', 11], ['Proposition', 11], ['Résultat', 14], ['STOP', 11], ['Statut', 18], ['Site', 26], ['Note Google', 14], ['Mes notes', 40],
             ],
             rows: tracked.map((p) => [
                 frenchDate(p.addedOn), p.company, p.trade, p.city, p.zone, p.contact || '', p.email || '', 'Registre + web',
@@ -74,7 +100,7 @@ export function tabs(state) {
                 frenchDate(p.steps?.first?.sentOn), frenchDate(p.steps?.followUp1?.sentOn), frenchDate(p.steps?.followUp2?.sentOn),
                 p.reply ? `${frenchDate(p.reply.date)} : ${p.reply.excerpt}` : '', frenchDate(p.tracking?.mockup), frenchDate(p.tracking?.call),
                 frenchDate(p.tracking?.proposal), p.tracking?.client ? 'Client' : (p.tracking?.result || ''), frenchDate(p.stoppedOn), STATUS_LABEL[p.status] || p.status,
-                p.website || '', p.googleRating || '',
+                p.website || '', p.googleRating || '', p.notes || '',
             ]),
         },
         {
@@ -86,6 +112,12 @@ export function tabs(state) {
             rows: state.prospects.filter((p) => p.status === 'otherChannel').sort((a, b) => (b.score || 0) - (a.score || 0)).map((p) => [
                 frenchDate(p.addedOn), p.company, p.trade, p.city, p.zone, p.phone || '', p.instagram || '', p.signal || '', p.googleRating || '', p.score ?? '', p.address || '', p.callHook || '',
             ]),
+        },
+        {
+            title: 'Par métier',
+            columns: [['Métier', 22], ['Trouvés', 10], ['Refusent la prospection', 14], ['Chauds', 9], ['À appeler', 10], ['Contactés', 10], ['Réponses', 10], ['Taux de réponse', 12], ['Clients', 9]],
+            rows: figuresByTrade(state).map((r) => [r.trade, r.found, r.opposed, r.hot, r.toCall, r.contacted, r.replies, percent(r.replyRate), r.clients])
+                .concat(figuresBySubject(state).map((s) => [`Objet ${s.style} (${s.style === 'A' ? 'question' : 'nom + bénéfice'})`, '', '', '', '', s.contacted, s.replies, percent(s.replyRate), ''])),
         },
         {
             title: 'Chiffres',
@@ -162,7 +194,7 @@ export function writeDailyReport(state, { notes = [] } = {}) {
     for (const e of events) L.push(`- ${new Date(e.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} : ${e.text}`)
     if (!notes.length && !events.length) L.push('- Rien.')
     L.push('', '## État')
-    L.push(`- E-mails envoyés aujourd'hui : ${f.emails} / ${cfg.maxEmailsPerDay}. En attente d'envoi (validés) : ${queue.length}.`)
+    L.push(`- E-mails envoyés aujourd'hui : ${f.emails} / ${dailyLimit(day)}${dailyLimit(day) < cfg.maxEmailsPerDay ? " (montée en charge de l'adresse)" : ''}. En attente d'envoi (validés) : ${queue.length}.`)
     L.push(`- Prospects prêts en réserve : ${ready} / ${cfg.readyReserve}. Prochain jour d'envoi : ${dayName(nextSendDay(addDays(day, 1)))}.`)
     const used = usage(new Date().toISOString().slice(0, 10))
     const searchedToday = state.prospects.filter((p) => p.addedOn === day)
@@ -195,6 +227,18 @@ function weeklyReview(state) {
     const byZone = zoneNames(state).map((z) => ({ z, f: figures(state, '0000', '9999', z) })).sort((a, b) => b.f.replyRate - a.f.replyRate)
     L.push('', '**Quelle zone répond le mieux ?**', '', '| Zone | Contactés | Réponses | Taux | Clients |', '|---|---|---|---|---|')
     for (const { z, f } of byZone) L.push(`| ${z} | ${f.contacted} | ${f.replies} | ${String(f.replyRate).replace('.', ',')} % | ${f.clients} |`)
+    const trades = figuresByTrade(state).sort((a, b) => b.replyRate - a.replyRate || b.found - a.found)
+    L.push('', '**Quel métier répond le mieux ?**', '', '| Métier | Trouvés | Refusent la prospection | Contactés | Réponses | Taux |', '|---|---|---|---|---|---|')
+    for (const r of trades) L.push(`| ${r.trade} | ${r.found} | ${r.opposed} | ${r.contacted} | ${r.replies} | ${String(r.replyRate).replace('.', ',')} % |`)
+    const weak = trades.filter((r) => r.contacted >= 20 && r.replyRate < 2)
+    if (weak.length) L.push('', `Conseil : ${weak.map((r) => r.trade).join(', ')} ne répond presque pas après 20 e-mails ou plus : désactive ce métier (Réglages, Avancé, Métiers) ou change l'offre qui lui est proposée.`)
+    const subjects = figuresBySubject(state)
+    L.push('', "**Quel style d'objet marche le mieux ?**", '', '| Style | Contactés | Réponses | Taux |', '|---|---|---|---|')
+    for (const s of subjects) L.push(`| ${s.style} : ${s.style === 'A' ? 'question courte' : 'nom + bénéfice'} | ${s.contacted} | ${s.replies} | ${String(s.replyRate).replace('.', ',')} % |`)
+    if (subjects.every((s) => s.contacted >= 30)) {
+        const [best, other] = [...subjects].sort((a, b) => b.replyRate - a.replyRate)
+        if (best.replyRate - other.replyRate >= 2) L.push('', `L'objet ${best.style} répond mieux (${String(best.replyRate).replace('.', ',')} % contre ${String(other.replyRate).replace('.', ',')} %) : garde-le dans tes prompts.`)
+    } else L.push('', 'Comparaison des objets : il faut au moins 30 e-mails de chaque style pour conclure.')
     L.push('', 'Rappel du plan : tester une seule chose à la fois (objet, accroche ou offre) sur au moins 30 e-mails avant de conclure.')
     return L
 }

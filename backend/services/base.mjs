@@ -104,8 +104,10 @@ export function publicHolidays(year) {
 
 // Calendar from the settings: days of the week (0 = Sunday ... 6 = Saturday), public holidays skipped or not
 const isHoliday = (s) => cfg.skipHolidays !== false && publicHolidays(+s.slice(0, 4)).has(s)
-export const isSearchDay = (s) => (cfg.searchDays || [1, 2, 3, 4, 5]).includes(dateOf(s).getDay()) && !isHoliday(s)
-export const isSendDay = (s) => (cfg.sendDays || [2, 3, 4]).includes(dateOf(s).getDay()) && !isHoliday(s)
+// Pause (holidays): nothing searched nor sent until this day included; replies and STOP are still read
+export const isPaused = (s = today()) => !!cfg.pauseUntil && s <= cfg.pauseUntil
+export const isSearchDay = (s) => (cfg.searchDays || [1, 2, 3, 4, 5]).includes(dateOf(s).getDay()) && !isHoliday(s) && !isPaused(s)
+export const isSendDay = (s) => (cfg.sendDays || [2, 3, 4]).includes(dateOf(s).getDay()) && !isHoliday(s) && !isPaused(s)
 // Names shown to the user (French)
 export const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
 export const daysText = (list) => [1, 2, 3, 4, 5, 6, 0].filter((d) => list.includes(d)).map((d) => DAY_NAMES[d]).join(', ') || 'aucun jour'

@@ -1,8 +1,17 @@
-// Settings: accounts first (Claude, sending), the rest folded in "Avancé" (zones, trades, volumes, mail server, Google, files)
+// Settings, simple first: profile, how DC Prospect works (settings/engine.js), sending; the rest folded in "Avancé"
 import { $, $$, esc } from '../../utils/dom.js'
 import { store } from '../../stores/state.js'
 import { api, ensureSuccess, hostAction } from '../../api.js'
-import { runAction, toast } from '../ui/Toast.js'
+import { runAction, toast, confirmClick } from '../ui/Toast.js'
+import { engineBlock, claudeBlock, onEngineClick } from './settings/engine.js'
+import { calendarBlock, slotRow } from './settings/calendar.js'
+import { diagnosisHtml } from './settings/diagnosis.js'
+import { templatesSection, loadTemplates, onTemplatesClick, onTemplatesChange } from './settings/templates.js'
+
+import { TRADE_NAF, nafOf } from '../../data/trades.js'
+import { activityExample } from '../../data/activities.js'
+
+export { engineBlock, claudeBlock }
 
 // Mail hosts ready to use: change of host = pick it here and type the password again
 // key: [name shown, SMTP server, SMTP port, IMAP server, IMAP port]
@@ -46,14 +55,16 @@ export function profileBlock(s, { full = true } = {}) {
             ${field('address', 'Adresse d\'envoi (pro ou perso)', s.sender, 'contact@ton-domaine.fr ou prenom.nom@gmail.com')}
             ${field('activity', 'Ton activité', p.activity, 'développeur web indépendant, photographe, graphiste...')}
             ${field('city', 'Ta ville', p.city, 'Compiègne (Oise)')}
-            ${full ? `${field('company', 'Nom de l\'entreprise', p.company, 'si différent de ton nom')}${field('website', 'Ton site', p.website, 'https://...')}${field('phone', 'Téléphone (signature)', p.phone)}${field('title', 'Titre sous ton nom (signature)', p.title, 'Développeur web')}` : ''}
         </div>
-        <label class="label field" for="pf-offer">Ce que tu proposes (offres, prix de départ, conditions)</label>
+        <div style="display:flex;justify-content:space-between;align-items:end;gap:1rem;flex-wrap:wrap"><label class="label field" for="pf-offer">Ce que tu proposes (offres, prix de départ, conditions)</label>
+            <button class="btn link small" data-activity-example title="Remplit avec un exemple adapté à ton activité, à modifier ensuite">Exemple pour mon activité</button></div>
+        <div id="activity-trades"></div>
         <textarea id="pf-offer" style="min-height:90px" placeholder="Site vitrine dès 490 €, site sur mesure..., paiement en plusieurs fois...">${esc(p.offer || '')}</textarea>
-        ${full ? `<label class="label field" for="pf-need">À quoi on voit qu'un prospect a besoin de toi</label>
+        ${full ? `<details style="margin-top:.8rem"><summary class="small" style="cursor:pointer">Compléter mon profil (facultatif) : site, téléphone, rendez-vous, signature</summary>
+        <div class="grid g2">${field('company', 'Nom de l\'entreprise', p.company, 'si différent de ton nom')}${field('website', 'Ton site', p.website, 'https://...')}${field('phone', 'Téléphone (signature)', p.phone)}${field('title', 'Titre sous ton nom (signature)', p.title, 'Développeur web')}${field('bookingUrl', 'Lien de prise de rendez-vous', p.bookingUrl, 'https://calendly.com/... : proposé aux prospects intéressés')}</div>
+        <label class="label field" for="pf-need">À quoi on voit qu'un prospect a besoin de toi</label>
         <textarea id="pf-need" style="min-height:70px" placeholder="${esc(s.defaultNeed)}">${esc(p.need || '')}</textarea>
-        <details style="margin-top:.8rem"><summary class="small" style="cursor:pointer">Ma signature HTML (facultatif)</summary>
-            <p class="muted small">Colle le code HTML de ta signature (sinon DC Prospect en fait une simple avec ton nom, ton titre, ton téléphone et ton site).</p>
+            <p class="muted small" style="margin-top:.8rem">Ma signature HTML (sinon DC Prospect en fait une simple avec ton nom, ton titre, ton téléphone et ton site).</p>
             <textarea id="pf-mainSignature" style="min-height:90px;font-family:monospace;font-size:.85rem">${esc(p.mainSignature || '')}</textarea>
             <label class="label field" for="pf-secondSignatureName">Deuxième signature (facultatif, ex : service comptabilité)</label>
             <input type="text" id="pf-secondSignatureName" value="${esc(p.secondSignatureName || '')}">
@@ -66,29 +77,44 @@ export function profileBlock(s, { full = true } = {}) {
 // First zone, in one field
 export function quickZoneBlock() {
     return `<div class="card"><strong class="display display-s">Ta zone de prospection</strong>
+        <p class="muted small">Le plus simple : ta ville et un rayon.</p>
+        <div class="grid g2"><div><label class="label field" for="za-town">Ville</label><input type="text" id="za-town" placeholder="Compiègne"></div>
+        <div><label class="label field" for="za-km">Rayon (km)</label><input type="number" id="za-km" value="20" min="2" max="80"></div></div>
+        <div class="actions"><button class="btn primary small" data-zone-around>Créer la zone</button></div>
+        <details style="margin-top:.8rem"><summary class="small" style="cursor:pointer">Ou par départements et codes postaux</summary>
         <p class="muted small">Les départements (60, 75, 69...) ou les codes postaux (60200, 60150...) où chercher. Tu pourras en ajouter d'autres dans Réglages.</p>
         <div class="grid g2"><div><label class="label field" for="qz-name">Nom de la zone</label><input type="text" id="qz-name" placeholder="Oise"></div>
         <div><label class="label field" for="qz-codes">Départements ou codes postaux</label><input type="text" id="qz-codes" placeholder="60"></div></div>
-        <div class="actions"><button class="btn primary small" data-quick-zone>Enregistrer la zone</button></div></div>`
+        <div class="actions"><button class="btn primary small" data-quick-zone>Enregistrer la zone</button></div></details></div>`
 }
 
-export function claudeBlock(s) {
-    const c = s.accounts?.claude || {}
-    const inApp = s.inApp
-    return `<div class="card account"><div class="avatar ${c.connected ? 'ok' : ''}">C</div><div style="flex:1">
-        <strong class="display display-s">Claude</strong>
-        <p class="muted small">${!inApp ? 'Visible dans l\'application DC Prospect.' : !c.installed ? 'Claude Code n\'est pas installé sur ce PC.' : c.connected ? `Connecté : ${esc(c.email)} (abonnement ${esc(c.plan || '')})` : 'Pas connecté.'}</p>
-        <p class="small">Il cherche les prospects et rédige les e-mails avec ton abonnement.</p>
-        <div class="actions">${!inApp ? '' : !c.installed ? '<button class="btn primary small" data-host="installClaude">Installer Claude Code</button>' : c.connected ? '<button class="btn small" data-host="disconnectClaude">Se déconnecter</button>' : '<button class="btn primary small" data-host="connectClaude">Se connecter à Claude</button>'}
-        <button class="btn link small" data-refresh>Actualiser</button></div></div></div>`
+// ---------- Deliverability: SPF, DKIM, DMARC of the sending domain, and the warm-up of a new address ----------
+export function deliverabilityBlock(s) {
+    const w = s.warmup || {}
+    return `<div class="card"><strong class="display display-s">Délivrabilité</strong>
+        <p class="muted small">Pour que tes e-mails arrivent en boîte de réception et pas en spam. Un clic vérifie que ton adresse ${esc(s.sender || '')} est bien réglée et dit quoi demander à ton hébergeur si besoin.</p>
+        <div class="actions"><button class="btn small" data-deliverability>Vérifier mon domaine</button></div>
+        <div id="deliverability-result" class="small" style="margin-top:.6rem"></div>
+        <div style="margin-top:1rem">${switchField('warmup', w.enabled, `Adresse neuve : démarrer doucement (5 e-mails par jour la 1re semaine, puis 5 de plus chaque semaine)${w.enabled ? ` : ${w.limitToday} aujourd'hui` : ''}`)}</div></div>`
+}
+
+// Steps for MY provider, found from my address (POST /api/accounts/auto-setup, kept in store.mailGuide)
+function mailGuideBlock(g, done) {
+    if (!g || done) return ''
+    return `<div class="tile" style="margin:.6rem 0 1rem;border-color:rgba(126,230,168,.35)"><p class="label">Pour ton adresse${g.name ? ` (${esc(g.name)})` : ''}</p>
+        <ol class="small" style="padding-left:1.2rem;margin:.4rem 0 0">${g.steps.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
+        ${g.warning ? `<p class="small" style="margin:.5rem 0 0;color:var(--yellow)">${esc(g.warning)}</p>` : ''}</div>`
 }
 
 export function sendingBlock(s) {
     const a = s.accounts || {}, gmail = a.gmail || {}, mailbox = a.mailbox || {}
     const viaGmail = a.sendingMode === 'gmail'
-    return `<div class="card account"><div class="avatar ${(viaGmail ? gmail.configured : mailbox.password) ? 'ok' : ''}">@</div><div style="flex:1">
+    const done = viaGmail ? gmail.configured : mailbox.password
+    const isGmail = /@(gmail|googlemail)\.com$/i.test(s.sender || '')
+    return `<div class="card account"><div class="avatar ${done ? 'ok' : ''}">@</div><div style="flex:1">
         <strong class="display display-s">Envoi des e-mails</strong>
         <p class="muted small">Le prospect voit toujours ${esc(s.sender || "ton adresse d'envoi")}.</p>
+        ${mailGuideBlock(store.mailGuide, done)}
         <div class="actions" style="margin:.4rem 0 .9rem">
             <button class="btn small ${viaGmail ? 'primary' : ''}" data-mode="gmail">Par mon Gmail (conseillé)</button>
             <button class="btn small ${viaGmail ? '' : 'primary'}" data-mode="mailbox">Par ma boîte directement</button>
@@ -101,10 +127,11 @@ export function sendingBlock(s) {
                 <li>La <a href="https://myaccount.google.com/signinoptions/twosv" target="_blank">validation en deux étapes</a> doit être active sur ton compte Google.</li>
                 <li>Ouvre <a href="https://myaccount.google.com/apppasswords" target="_blank">Mots de passe des applications</a>, tape « DC Prospect », clique sur Créer.</li>
                 <li>Colle ici les 16 lettres affichées.</li></ol>
-               <input type="text" id="gmail-address" value="${esc(gmail.address || '')}" placeholder="Ton adresse Gmail" autocomplete="off" style="margin-bottom:.5rem">
+               <input type="text" id="gmail-address" value="${esc(gmail.address || (isGmail ? s.sender : ''))}" placeholder="Ton adresse Gmail" autocomplete="off" style="margin-bottom:.5rem">
                <input type="password" id="gmail-password" placeholder="Mot de passe d'application (16 lettres)" autocomplete="off">
                <div class="actions"><button class="btn primary small" data-gmail>Brancher Gmail</button></div>`)
         : `<p class="small">${mailbox.password ? `Mot de passe de ${esc(s.sender)} enregistré (chiffré par Windows sur ce PC). Serveur : ${esc(s.mailbox.smtpHost)}.` : `Tape le mot de passe de ${esc(s.sender)} (serveur ${esc(s.mailbox.smtpHost || "à choisir dans Avancé")}). Boîte perso (Orange, SFR, Free, Yahoo, Outlook...) : choisis ton fournisseur dans Avancé ; certains demandent un mot de passe d'application.`}</p>
+           ${mailbox.password ? '' : `<div class="actions" style="margin:.2rem 0 .6rem"><button class="btn small" data-detect-mail>Trouver mon serveur tout seul</button><span class="muted small" style="align-self:center">à partir de ton adresse, sans rien taper de technique</span></div>`}
            <input type="password" id="mailbox-password" placeholder="Mot de passe de ${esc(s.sender)}" autocomplete="off">
            <div class="actions"><button class="btn primary small" data-password>Enregistrer et tester</button>${mailbox.password ? '<button class="btn link small" data-test-email>M\'envoyer un e-mail de test</button><button class="btn link small" data-host="forgetPassword">Oublier</button>' : ''}</div>`}
     </div></div>`
@@ -117,17 +144,21 @@ export function renderSettings() {
     const a = s.accounts || {}, g = a.google || {}, inApp = s.inApp, mb = s.mailbox
     $('#view-settings').innerHTML = `
     <div class="page-head"><div><p class="label eyebrow">Ce PC et tes préférences</p><h1 class="display display-l">Réglages</h1></div>
-        <p class="muted">Les comptes sont propres à ce PC. Zones, métiers et volumes sont dans ton Drive : tous tes PC utilisent les mêmes.</p></div>
+        <p class="muted">Trois choses suffisent : ton profil, la formule et l'envoi. Le reste est déjà réglé ; il est dans « Avancé » si tu veux l'ajuster.</p></div>
 
     <div class="section"><p class="label eyebrow">Profil</p>${profileBlock(s)}</div>
 
-    <div class="section"><p class="label eyebrow">Comptes</p><div class="grid g2">${claudeBlock(s)}${sendingBlock(s)}</div>
-        <div class="actions"><button class="btn" data-check>Tout vérifier</button><span id="check-result" class="muted small" style="align-self:center"></span></div></div>
+    <div class="section"><p class="label eyebrow">Formule</p>${engineBlock(s)}</div>
+
+    <div class="section"><p class="label eyebrow">Envoi</p><div class="grid g2">${sendingBlock(s)}${deliverabilityBlock(s)}</div>
+        <div class="actions"><button class="btn" data-check>Tout vérifier</button></div><div id="check-result" class="small" style="margin-top:.6rem"></div></div>
 
     <div class="section"><p class="label eyebrow">Application</p><div class="card">
         <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:center">
             <strong class="display display-s">DC Prospect ${esc(a.version || '')}</strong>
             ${switchField('auto-start', s.autoStart, 'Démarrer avec Windows', !inApp)}
+            ${switchField('daily-digest', s.dailyDigest, 'M\'envoyer un résumé par e-mail le matin')}
+            <span style="display:flex;gap:.5rem;align-items:center"><label class="small" for="pause-until">Pause (vacances) jusqu'au</label><input type="date" id="pause-until" value="${esc(s.pauseUntil || '')}" style="width:12rem">${s.pauseUntil ? '<button class="btn link small" data-pause-off>Reprendre</button>' : ''}</span>
             <span class="muted small">${a.update ? `Mise à jour ${esc(a.update.version)} prête.` : 'Mises à jour : par le dossier Installation de tes données, ou sur la page des releases.'}</span>
         </div>
         <div class="actions">${a.update ? '<button class="btn primary small" data-host="installUpdate">Installer la mise à jour</button>' : ''}<button class="btn small" data-open="data">Ouvrir le dossier (tableau, rapports)</button><button class="btn link small" data-host="quit">Quitter l'application</button></div>
@@ -139,20 +170,24 @@ export function renderSettings() {
         <p class="muted">Une zone par semaine, chacune son tour (cette semaine : <strong style="color:var(--paper)">${esc(s.zoneOfTheWeek || 'aucune')}</strong>). Départements (60, 75...) ou codes postaux (60200, 60150...), séparés par des virgules.</p>
         <div class="zone-row label" style="border:0"><span>Nom</span><span>Départements</span><span>Codes postaux</span><span>Active</span><span></span></div>
         <div id="zones">${s.zones.map(zoneRow).join('')}</div>
+        <div style="margin:1rem 0">${quickZoneBlock()}</div>
         <div class="actions"><button class="btn small" data-add-zone>Ajouter une zone</button><button class="btn primary small" data-save="zones">Enregistrer les zones</button></div></div>
 
     <div class="section"><p class="label eyebrow">Métiers ciblés</p>
-        <p class="muted">Ce que Claude cherche dans chaque ville (« plombier Compiègne »...). La barre montre ce qui rapporte le plus : ces métiers passent en premier.</p>
+        <p class="muted">Les métiers à prospecter dans chaque ville. Les codes NAF (registre officiel) permettent de ne garder que les entreprises qui acceptent la prospection. La barre montre ce qui rapporte le plus : ces métiers passent en premier.</p>
         <div class="trade-row label" style="border:0"><span>Métier</span><span>Codes NAF (registre)</span><span>Rendement</span><span>Actif</span><span></span></div>
         <div id="trades">${s.trades.map((t) => tradeRow(t, s.tradeYield?.[t.name])).join('')}</div>
+        <datalist id="trade-names">${Object.keys(TRADE_NAF).map((k) => `<option value="${esc(k)}">`).join('')}</datalist>
         <div class="actions"><button class="btn small" data-add-trade>Ajouter un métier</button><button class="btn primary small" data-save="trades">Enregistrer les métiers</button></div></div>
 
     <div class="section"><p class="label eyebrow">Volumes</p><div class="grid g3">
-        ${[['maxSearchesPerDay', 'Recherches web par jour', 'Une recherche = un métier dans une ville (jusqu\'à 6 entreprises avec e-mail). Baisse si l\'abonnement Claude sature.'], ['readyReserve', 'Réserve de prospects prêts', '1ers e-mails rédigés d\'avance'], ['maxEmailsPerDay', 'E-mails par jour au maximum', 'Plan : 20']]
+        ${[['maxSearchesPerDay', 'Recherches web par jour', 'Une recherche = un métier dans une ville (jusqu\'à 6 entreprises avec e-mail). Baisse si ton abonnement ou ton quota sature.'], ['readyReserve', 'Réserve de prospects prêts', '1ers e-mails rédigés d\'avance'], ['maxEmailsPerDay', 'E-mails par jour au maximum', 'Plan : 20']]
             .map(([k, label, hint]) => `<div class="tile"><p class="label">${label}</p><input type="number" min="0" data-volume="${k}" value="${esc(s[k])}" style="margin:.7rem 0 .4rem;font-size:1.4rem"><p class="muted small" style="margin:0">${hint}</p></div>`).join('')}
     </div><div class="actions"><button class="btn primary small" data-save="volumes">Enregistrer les volumes</button></div></div>
 
     ${calendarBlock(s)}
+
+    ${templatesSection()}
 
     <div class="section"><p class="label eyebrow">Adresse d'envoi et serveur de ta boîte</p>
         <p class="muted">Si tu changes d'hébergeur : choisis-le, enregistre, puis retape le mot de passe (Comptes). Pense aussi aux réglages SPF, DKIM et DMARC du domaine chez le nouvel hébergeur.</p>
@@ -177,48 +212,43 @@ export function renderSettings() {
         <p class="muted small">Données, tableau et rapports : ${esc(a.folder || s.dataFolder)}</p>
         <div class="actions"><button class="btn small" data-open="reports">Rapports</button><button class="btn small" data-open="logs">Journaux</button><button class="btn link small" data-host="chooseFolder">Changer de dossier</button><button class="btn link small" data-host="declareMcp">Déclarer le MCP dans Claude Code</button><button class="btn link small" data-host="checkUpdate">Chercher une mise à jour</button></div></div>
     </details>`
-}
-
-// ---------- Calendar: research days, sending days and their first e-mails, time slots, follow-ups, rhythm, holidays ----------
-// [day of the week (0 = Sunday), name shown]
-const DAYS = [[1, 'Lundi'], [2, 'Mardi'], [3, 'Mercredi'], [4, 'Jeudi'], [5, 'Vendredi'], [6, 'Samedi'], [0, 'Dimanche']]
-const slotRow = ([start, end]) => `<div class="slot" style="display:flex;gap:.7rem;align-items:center;margin-bottom:.5rem"><input type="time" data-slot="start" value="${esc(start)}" style="width:9rem"><span class="muted">à</span><input type="time" data-slot="end" value="${esc(end)}" style="width:9rem"><button class="btn link small" data-remove-slot>Supprimer</button></div>`
-
-function calendarBlock(s) {
-    const sendDays = s.sendDays || [2, 3, 4], searchDays = s.searchDays || [1, 2, 3, 4, 5]
-    return `<div class="section"><p class="label eyebrow">Calendrier</p>
-        <p class="muted">Quand DC Prospect cherche, quand il envoie, et à quel rythme. Les réponses et les STOP, eux, sont lus tous les jours, toutes les 15 minutes.</p>
-        <div class="grid g2">
-            <div class="tile"><p class="label">Jours de recherche</p><p class="muted small">Recherche de prospects et rédaction des 1ers e-mails</p>
-                <div style="display:flex;flex-wrap:wrap;gap:.8rem 1.4rem;margin-top:.7rem">${DAYS.map(([d, name]) => `<label class="switch"><input type="checkbox" data-search-day="${d}" ${searchDays.includes(d) ? 'checked' : ''}> ${name}</label>`).join('')}</div></div>
-            <div class="tile"><p class="label">Jours d'envoi et 1ers e-mails par jour</p><p class="muted small">Les relances dues partent ces jours-là en premier ; puis les 1ers e-mails, jusqu'au maximum par jour</p>
-                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem 1.4rem;margin-top:.7rem">${DAYS.map(([d, name]) => `<div style="display:flex;align-items:center;gap:.7rem"><label class="switch" style="min-width:8.5rem"><input type="checkbox" data-send-day="${d}" ${sendDays.includes(d) ? 'checked' : ''}> ${name}</label><input type="number" min="0" max="40" data-first-emails="${d}" value="${esc(s.firstEmailsPerDay?.[d] ?? 0)}" title="1ers e-mails le ${name.toLowerCase()}" style="width:5rem;padding:.4rem .6rem"></div>`).join('')}</div></div>
-            <div class="tile"><p class="label">Créneaux d'envoi</p><p class="muted small">Heures où les e-mails validés partent (les mêmes pour chaque jour d'envoi)</p>
-                <div id="slots" style="margin-top:.7rem">${(s.sendWindows || []).map(slotRow).join('')}</div>
-                <button class="btn small" data-add-slot>Ajouter un créneau</button></div>
-            <div class="tile"><p class="label">Relances et rythme</p>
-                <div style="display:grid;grid-template-columns:auto 6rem;gap:.6rem 1rem;align-items:center;margin-top:.7rem">
-                    <span>Relance 1 : jours après le 1er e-mail</span><input type="number" min="1" max="30" id="cal-first" value="${esc(s.followUpDays?.first ?? 4)}">
-                    <span>Relance 2 : jours après le 1er e-mail</span><input type="number" min="2" max="60" id="cal-second" value="${esc(s.followUpDays?.second ?? 11)}">
-                    <span>Écart entre deux e-mails : minimum (minutes)</span><input type="number" min="1" max="60" id="cal-gap-min" value="${esc(s.gapMinutes?.[0] ?? 2)}">
-                    <span>Écart entre deux e-mails : maximum (minutes)</span><input type="number" min="1" max="60" id="cal-gap-max" value="${esc(s.gapMinutes?.[1] ?? 4)}">
-                </div>
-                <div style="margin-top:1rem">${switchField('cal-holidays', s.skipHolidays !== false, 'Ne rien chercher ni envoyer les jours fériés')}</div>
-                <p class="muted small" style="margin:.6rem 0 0">Une relance qui tombe un jour sans envoi part au jour d'envoi suivant.</p></div>
-        </div>
-        <div class="actions"><button class="btn primary small" data-save="calendar">Enregistrer le calendrier</button></div></div>`
+    // my e-mail templates: read when the section is opened
+    $('#templates-section')?.addEventListener('toggle', (e) => { if (e.target.open) loadTemplates() })
 }
 
 const zoneRow = (z) => `<div class="zone-row"><input type="text" data-k="name" value="${esc(z.name)}" aria-label="Nom"><input type="text" data-k="departments" value="${esc((z.departments || []).join(', '))}" aria-label="Départements"><input type="text" data-k="postalCodes" value="${esc((z.postalCodes || []).join(', '))}" aria-label="Codes postaux"><label class="switch"><input type="checkbox" data-k="active" ${z.active !== false ? 'checked' : ''}></label><button class="btn link small" data-remove>Supprimer</button></div>`
-const tradeRow = (t, yieldRate) => `<div class="trade-row"><input type="text" data-k="name" value="${esc(t.name)}" aria-label="Métier"><input type="text" data-k="naf" value="${esc((t.naf || []).join(', '))}" aria-label="Codes NAF"><div class="gauge" title="${yieldRate ? Math.round(yieldRate * 100) + ' %' : ''}"><span style="width:${Math.round((yieldRate || 0) * 100)}%"></span></div><label class="switch"><input type="checkbox" data-k="active" ${t.active !== false ? 'checked' : ''}></label><button class="btn link small" data-remove>Supprimer</button></div>`
+const tradeRow = (t, yieldRate) => `<div class="trade-row"><input type="text" data-k="name" value="${esc(t.name)}" aria-label="Métier" list="trade-names" placeholder="Commence à taper : coiffure, plombier..."><input type="text" data-k="naf" value="${esc((t.naf || []).join(', '))}" aria-label="Codes NAF"><div class="gauge" title="${yieldRate ? Math.round(yieldRate * 100) + ' %' : ''}"><span style="width:${Math.round((yieldRate || 0) * 100)}%"></span></div><label class="switch"><input type="checkbox" data-k="active" ${t.active !== false ? 'checked' : ''}></label><button class="btn link small" data-remove>Supprimer</button></div>`
 const readRows = (selector) => $$(selector + ' > div').map((row) => Object.fromEntries($$('[data-k]', row).map((i) => [i.dataset.k, i.type === 'checkbox' ? i.checked : i.value])))
 
 // ---------- Clicks and switches of the accounts and settings (also used by the home screen) ----------
 export async function onSettingsClick(b, reload) {
     if (b.hasAttribute('data-profile')) {
         const d = {}
-        for (const k of ['firstName', 'lastName', 'address', 'activity', 'city', 'company', 'website', 'phone', 'title', 'offer', 'need', 'mainSignature', 'secondSignature', 'secondSignatureName']) { const i = $('#pf-' + k); if (i) d[k] = i.value }
+        for (const k of ['firstName', 'lastName', 'address', 'activity', 'city', 'company', 'website', 'phone', 'title', 'bookingUrl', 'offer', 'need', 'mainSignature', 'secondSignature', 'secondSignatureName']) { const i = $('#pf-' + k); if (i) d[k] = i.value }
         await runAction(b, () => ensureSuccess(api.put('/settings', { profile: d })), 'Profil enregistré')
+        return reload()
+    }
+    // Example for my activity: offer, signs of a need, trades worth prospecting (to change afterwards)
+    if (b.hasAttribute('data-activity-example')) {
+        const card = b.closest('.card'), ex = activityExample($('#pf-activity', card)?.value)
+        if (!ex) { toast('Tape d\'abord ton activité (photographe, graphiste, développeur web...) : je propose un exemple qui lui correspond', true); return true }
+        const offer = $('#pf-offer', card), need = $('#pf-need', card)
+        if (!offer.value.trim() || confirmClick(b, 'Remplacer mon texte')) offer.value = ex.offer; else return true
+        if (need && !need.value.trim()) need.value = ex.need
+        $('#activity-trades', card).innerHTML = `<p class="small" style="margin:.4rem 0">Métiers conseillés pour ton activité : ${ex.trades.map(esc).join(', ')}. <button class="btn link small" data-use-trades="${esc(ex.trades.join('|'))}">Prospecter ces métiers</button></p>`
+        toast('Exemple rempli : adapte-le (tes vrais prix) puis enregistre ton profil')
+        return true
+    }
+    if (b.dataset.useTrades) {
+        const names = b.dataset.useTrades.split('|')
+        const trades = [...names.map((name) => ({ name, naf: nafOf(name), active: true })), ...(store.settings.trades || []).filter((t) => !names.includes(t.name)).map((t) => ({ ...t, active: false }))]
+        await runAction(b, () => ensureSuccess(api.put('/settings', { trades })), 'Métiers choisis : les autres sont désactivés (Réglages, Avancé, Métiers)')
+        return true
+    }
+    if (b.hasAttribute('data-zone-around')) {
+        const card = b.closest('.card'), town = $('#za-town', card).value.trim()
+        if (!town) { toast('Tape d\'abord ta ville', true); return true }
+        await runAction(b, () => ensureSuccess(api.post('/zones/around', { town, km: $('#za-km', card).value })), (r) => `Zone créée : ${r.zone.name}, ${r.towns} communes`)
         return reload()
     }
     if (b.hasAttribute('data-quick-zone')) {
@@ -231,6 +261,17 @@ export async function onSettingsClick(b, reload) {
     if (b.hasAttribute('data-gmail')) { await runAction(b, () => ensureSuccess(api.post('/accounts/gmail', { address: $('#gmail-address').value, password: $('#gmail-password').value })), 'Gmail branché : les e-mails partiront par ton Gmail en tant que contact@'); return reload() }
     if (b.hasAttribute('data-gmail-forget')) { await runAction(b, () => ensureSuccess(api.delete('/accounts/gmail')), 'Gmail débranché'); return reload() }
     if (b.hasAttribute('data-test-email')) { await runAction(b, () => ensureSuccess(api.post('/accounts/test-email')), (r) => `E-mail de test envoyé à ${r.to} : vérifie que l'expéditeur affiché est contact@`); return true }
+    if (b.hasAttribute('data-pause-off')) { await runAction(b, () => ensureSuccess(api.put('/settings', { pauseUntil: '' })), 'DC Prospect reprend'); return reload() }
+    if (b.hasAttribute('data-detect-mail')) {
+        const r = await runAction(b, () => ensureSuccess(api.post('/accounts/detect-mail')))
+        const h = r?.host
+        if (!r) return true
+        if (!h) { toast('Hébergeur pas reconnu : choisis-le dans Avancé, « Adresse d\'envoi et serveur de ta boîte »', true); return true }
+        if (h.gmail) { toast(`${h.name} : le plus simple est « Par mon Gmail » (bouton au-dessus)`); return true }
+        const mb = store.settings.mailbox
+        await runAction(b, () => ensureSuccess(api.put('/settings', { mailbox: { name: mb.name, address: mb.address, smtpHost: h.smtpHost, smtpPort: h.smtpPort, imapHost: h.imapHost, imapPort: h.imapPort } })), `${h.name} trouvé : serveur rempli, tape maintenant ton mot de passe`)
+        return reload()
+    }
     if (b.hasAttribute('data-password')) {
         const password = $('#mailbox-password').value
         if (!password) { toast('Tape d\'abord le mot de passe', true); return true }
@@ -240,8 +281,7 @@ export async function onSettingsClick(b, reload) {
     if (b.hasAttribute('data-check')) {
         $('#check-result').textContent = 'Vérification (30 secondes environ)...'
         const r = await runAction(b, () => ensureSuccess(api.post('/accounts/check')))
-        if (r) $('#check-result').innerHTML = Object.entries({ Envoi: r.results.sending, Claude: r.results.claude, Registre: r.results.register, Dossier: r.results.folder })
-            .map(([k, v]) => `<span style="margin-right:1rem;color:${v === 'OK' ? 'var(--mint)' : 'var(--red)'}">${k} : ${esc(v)}</span>`).join('')
+        if (r) $('#check-result').innerHTML = diagnosisHtml(r.results)
         return true
     }
     if (b.hasAttribute('data-google')) {
@@ -249,7 +289,17 @@ export async function onSettingsClick(b, reload) {
         await runAction(b, () => hostAction('connectGoogle', { canRead: false }), (status) => `Google connecté : ${status.email}`)
         return reload()
     }
-    if (b.hasAttribute('data-refresh')) { await runAction(b, () => hostAction('claudeStatus')); return reload() }
+    if (await onEngineClick(b, reload)) return true
+    if (await onTemplatesClick(b)) return true
+    if (b.hasAttribute('data-deliverability')) {
+        const r = await runAction(b, () => ensureSuccess(api.post('/accounts/deliverability')))
+        if (r) {
+            const d = r.result
+            const flag = (label, ok) => `<span style="margin-right:1rem;color:${ok ? 'var(--mint)' : 'var(--red)'}">${label} ${ok ? 'OK' : 'manquant'}</span>`
+            $('#deliverability-result').innerHTML = (d.webmail ? '' : `<p>${flag('MX', d.mx)}${flag('SPF', d.spf)}${flag('DKIM', d.dkim)}${flag('DMARC', d.dmarc)}</p>`) + d.advice.map((a) => `<p class="muted">${esc(a)}</p>`).join('')
+        }
+        return true
+    }
     if (b.hasAttribute('data-add-zone')) { $('#zones').insertAdjacentHTML('beforeend', zoneRow({ name: '', departments: [], postalCodes: [], active: true })); return true }
     if (b.hasAttribute('data-add-trade')) { $('#trades').insertAdjacentHTML('beforeend', tradeRow({ name: '', naf: [], active: true })); return true }
     if (b.hasAttribute('data-remove')) { b.closest('.zone-row, .trade-row').remove(); return true }
@@ -287,8 +337,19 @@ export async function onSettingsChange(i, reload) {
         toast('Serveur rempli : clique sur « Enregistrer l\'adresse et le serveur »')
         return true
     }
+    // a known trade typed: its NAF codes are filled
+    if (i.dataset.k === 'name' && i.closest('.trade-row')) {
+        const naf = $('[data-k=naf]', i.closest('.trade-row'))
+        if (!naf.value.trim() && nafOf(i.value).length) { naf.value = nafOf(i.value).join(', '); toast('Codes du registre remplis : pense à enregistrer les métiers') }
+        return true
+    }
     const google = { 'g-sheets': () => ({ sheets: i.checked }), 'g-docs': () => ({ docs: i.checked }) }[i.id]
     if (google) { await runAction(null, () => hostAction('setGoogleOptions', google()), 'Enregistré'); reload(); return true }
+    if (onTemplatesChange(i)) return true
+    if (i.id === 'auto-follow-ups') { await runAction(null, () => ensureSuccess(api.put('/settings', { autoApproveFollowUps: i.checked })), i.checked ? 'Les relances partiront sans ta validation (si leur texte est propre)' : 'Les relances attendent de nouveau ta validation'); return true }
+    if (i.id === 'daily-digest') { await runAction(null, () => ensureSuccess(api.put('/settings', { dailyDigest: i.checked })), i.checked ? 'Chaque matin où quelque chose t\'attend, un résumé arrive dans ta boîte' : 'Plus de résumé par e-mail'); return true }
+    if (i.id === 'pause-until') { await runAction(null, () => ensureSuccess(api.put('/settings', { pauseUntil: i.value })), i.value ? "En pause : rien ne sera cherché ni envoyé jusqu'à cette date" : 'DC Prospect reprend'); reload(); return true }
+    if (i.id === 'warmup') { await runAction(null, () => ensureSuccess(api.put('/settings', { warmup: { enabled: i.checked } })), i.checked ? 'Montée en charge activée : 5 e-mails par jour cette semaine' : 'Montée en charge désactivée'); reload(); return true }
     if (i.id === 'auto-start') { await runAction(null, () => hostAction('setAutoStart', i.checked), i.checked ? 'Démarre avec Windows' : 'Ne démarre plus avec Windows'); return true }
     return false
 }
