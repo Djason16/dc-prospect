@@ -8,6 +8,7 @@
 //   const text = await runAi(prompt, { web: true, task: 'search' })
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { cfg, localFolder, log } from './base.js'
 import { readSecret, hasSecret } from './vault.js'
@@ -73,7 +74,12 @@ export function usage(day: string): DayUsage {
 }
 
 // ---------- Claude Code (headless, the user's subscription) ----------
-export const claudeExe = () => [path.join(process.env.USERPROFILE || '', '.local', 'bin', 'claude.exe')].find((f) => fs.existsSync(f)) || 'claude'
+// Where the official installer puts it (Windows: %USERPROFILE%\.local\bin\claude.exe; macOS and Linux: ~/.local/bin/claude),
+// or Homebrew and npm on macOS and Linux: an app started from the Dock or a menu does not get the PATH of the terminal
+const claudePlaces = (): string[] => process.platform === 'win32'
+    ? [path.join(process.env.USERPROFILE || '', '.local', 'bin', 'claude.exe')]
+    : [path.join(os.homedir(), '.local', 'bin', 'claude'), path.join(os.homedir(), '.claude', 'local', 'claude'), '/opt/homebrew/bin/claude', '/usr/local/bin/claude', path.join(os.homedir(), '.npm-global', 'bin', 'claude')]
+export const claudeExe = () => claudePlaces().find((f) => fs.existsSync(f)) || 'claude'
 
 const runClaudeCode: EngineRun = (prompt, { web, minutes, task }) => {
     return new Promise<string>((resolve, reject) => {
@@ -84,7 +90,7 @@ const runClaudeCode: EngineRun = (prompt, { web, minutes, task }) => {
         // Neutral working folder: no CLAUDE.md, no project files
         const cwd = path.join(localFolder, 'claude')
         fs.mkdirSync(cwd, { recursive: true })
-        const child = spawn(exe, args, { cwd, shell: exe === 'claude', windowsHide: true })
+        const child = spawn(exe, args, { cwd, shell: exe === 'claude' && process.platform === 'win32', windowsHide: true })
         let out = '', err = ''
         const timer = setTimeout(() => { child.kill(); reject(new Error('Claude : délai dépassé')) }, minutes * 60e3)
         child.stdout.on('data', (d: Buffer) => (out += d))

@@ -37,6 +37,11 @@ body.in-app .topbar { padding-right: 170px; height: 56px; }
     body.in-app .topbar .right { order: 4; width: 100%; margin: 0; padding: 0.3rem 0 0.6rem; justify-content: space-between; }
     body.in-app .topbar > .display { margin-right: 150px; }
 }
+/* macOS: the window buttons are on the top left (about 70 px, main.ts), nothing on the right */
+body.in-app.mac .topbar { padding-right: var(--gutter); }
+body.in-app.mac .topbar > img { margin-left: 64px; }
+@media (max-width: 760px) { body.in-app.mac .topbar .right { margin-right: 0; } }
+@media (max-width: 560px) { body.in-app.mac .topbar > .display { margin-right: 0; } }
 @media (max-width: 480px) {
     .topbar > .display { display: none; }
     body.in-app .topbar > img { margin-right: auto; }

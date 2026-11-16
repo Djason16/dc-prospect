@@ -80,7 +80,6 @@ export function renderToday(): void {
     if (day.pauseUntil) banners.push(`<div class="banner info"><span>En pause jusqu'au ${esc(day.pauseUntil)} : rien n'est cherché ni envoyé, les réponses sont toujours lues.</span><button class="btn small" data-pause-off>Reprendre</button></div>`)
     if (day.busy) banners.push(`<div class="banner info"><span><span class="status-dot pending" style="margin-right:.8rem"></span>${esc(day.progress || 'Préparation en cours')}</span></div>`)
     if (day.error && ready(settings)) banners.push(`<div class="banner error"><span>${esc(day.error)}</span><button class="btn small" data-go="settings">Réglages</button></div>`)
-    if (day.health?.update) banners.push(`<div class="banner"><span>Nouvelle version de DC Prospect : ${esc(day.health.update.version)}</span><button class="btn primary small" data-host="installUpdate">Installer</button></div>`)
     $('#banners').innerHTML = banners.join('')
 
     const s = day.stats

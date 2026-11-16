@@ -10,6 +10,7 @@ import { diagnosisHtml } from './settings/diagnosis.js'
 import { templatesSection, loadTemplates, onTemplatesClick, onTemplatesChange } from './settings/templates.js'
 import { switchField, profileBlock, quickZoneBlock, deliverabilityBlock, sendingBlock } from './settings/blocks.js'
 import type { DomainCheck, MailHost, Settings, Trade, Zone } from '../../types.js'
+import { OS_NAME } from '../../utils/os.js'
 import { TRADE_NAF, nafOf } from '../../data/trades.js'
 import { activityExample } from '../../data/activities.js'
 
@@ -58,12 +59,12 @@ export function renderSettings(): void {
     <div class="section"><p class="label eyebrow">Application</p><div class="card">
         <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:center">
             <strong class="display display-s">DC Prospect ${esc(a.version || '')}</strong>
-            ${switchField('auto-start', s.autoStart, 'Démarrer avec Windows', !inApp)}
+            ${switchField('auto-start', s.autoStart, `Démarrer avec ${OS_NAME}`, !inApp)}
             ${switchField('daily-digest', s.dailyDigest, 'M\'envoyer un résumé par e-mail le matin')}
             <span class="pause-field"><label class="small" for="pause-until">Pause (vacances) jusqu'au</label><input type="date" id="pause-until" value="${esc(s.pauseUntil || '')}">${s.pauseUntil ? '<button class="btn link small" data-pause-off>Reprendre</button>' : ''}</span>
-            <span class="muted small">${a.update ? `Mise à jour ${esc(a.update.version)} prête.` : 'Mises à jour : par le dossier Installation de tes données, ou sur la page des releases.'}</span>
+            <span class="muted small">${a.update ? `Une mise à jour est disponible : ${esc(a.update.version)}.` : 'Mises à jour : DC Prospect regarde tout seul s\'il y a une nouvelle version (au démarrage, puis toutes les 3 heures).'}</span>
         </div>
-        <div class="actions">${a.update ? '<button class="btn primary small" data-host="installUpdate">Installer la mise à jour</button>' : ''}<button class="btn small" data-open="data">Ouvrir le dossier (tableau, rapports)</button><button class="btn link small" data-host="quit">Quitter l'application</button></div>
+        <div class="actions">${a.update ? `<button class="btn primary small" data-host="installUpdate">Mettre à jour</button><button class="btn small" data-open="${esc(a.update.page || 'https://github.com/Djason16/dc-prospect/releases/latest')}">Voir les nouveautés</button>` : ''}<button class="btn small" data-open="data">Ouvrir le dossier (tableau, rapports)</button><button class="btn link small" data-host="quit">Quitter l'application</button></div>
     </div></div>
 
     <details class="section advanced"><summary class="label eyebrow">Avancé : zones, métiers, volumes, calendrier, serveur mail, Google</summary>
@@ -260,6 +261,6 @@ export async function onSettingsChange(i: HTMLInputElement, reload: () => Promis
     if (i.id === 'daily-digest') { await runAction(null, () => ensureSuccess(api.put('/settings', { dailyDigest: i.checked })), i.checked ? 'Chaque matin où quelque chose t\'attend, un résumé arrive dans ta boîte' : 'Plus de résumé par e-mail'); return true }
     if (i.id === 'pause-until') { await runAction(null, () => ensureSuccess(api.put('/settings', { pauseUntil: i.value })), i.value ? "En pause : rien ne sera cherché ni envoyé jusqu'à cette date" : 'DC Prospect reprend'); reload(); return true }
     if (i.id === 'warmup') { await runAction(null, () => ensureSuccess(api.put('/settings', { warmup: { enabled: i.checked } })), i.checked ? 'Montée en charge activée : 5 e-mails par jour cette semaine' : 'Montée en charge désactivée'); reload(); return true }
-    if (i.id === 'auto-start') { await runAction(null, () => hostAction('setAutoStart', i.checked), i.checked ? 'Démarre avec Windows' : 'Ne démarre plus avec Windows'); return true }
+    if (i.id === 'auto-start') { await runAction(null, () => hostAction('setAutoStart', i.checked), i.checked ? `Démarre avec ${OS_NAME}` : `Ne démarre plus avec ${OS_NAME}`); return true }
     return false
 }

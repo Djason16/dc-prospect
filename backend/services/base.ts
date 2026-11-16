@@ -5,19 +5,21 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Config, LocalSettings, State } from '../types.js'
 import { migrateLocalFolder, migrateDataFolder, migrateStateFile, migrateMcpLog } from './migration.js'
+import { systemConfigFolder } from './platform.js'
 
 // project folder: this file runs compiled in out/backend/services/ -> three levels up
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 // config.json holds the defaults shipped with the app (typed here, at the only place it is read)
 export const cfg = JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf8')) as Config
 
-// Local folder for secrets and logs (never on Drive)
-export const localFolder = path.join(process.env.APPDATA || os.homedir(), 'prospection-auto')
+// Local folder for secrets and logs (never on Drive): %APPDATA%\prospection-auto on Windows,
+// ~/Library/Application Support/prospection-auto on macOS, ~/.config/prospection-auto on Linux (APPDATA set: that folder, for the tests)
+export const localFolder = path.join(process.env.APPDATA || systemConfigFolder(), 'prospection-auto')
 fs.mkdirSync(localFolder, { recursive: true })
 migrateLocalFolder(localFolder) // files written by a version before 1.2.0
 fs.mkdirSync(path.join(localFolder, 'logs'), { recursive: true })
 
-// Settings of this PC only (folder of the data chosen in the app), in %APPDATA%\prospection-auto\local.json
+// Settings of this PC only (folder of the data chosen in the app), in <localFolder>/local.json
 export const localFile = path.join(localFolder, 'local.json')
 export function localSettings(): LocalSettings { try { return JSON.parse(fs.readFileSync(localFile, 'utf8')) as LocalSettings } catch { return {} } }
 export function updateLocalSettings(changes: Partial<LocalSettings>): LocalSettings { const r = { ...localSettings(), ...changes }; fs.writeFileSync(localFile, JSON.stringify(r, null, 1)); return r }

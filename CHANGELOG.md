@@ -1,5 +1,18 @@
 # Journal des versions
 
+## 1.4.0 (novembre 2026)
+- **DC Prospect sur Mac et Linux** : en plus de Windows, une version macOS (`.dmg` et `.zip`, puce Apple et Intel) et une version Linux (AppImage, paquet `.deb`, archive `.tar.gz`, 64 bits). Tout marche pareil : IA intégrée (avec la carte graphique du Mac par Metal), Gemini, Claude Code, Gmail ou ta boîte, démarrage avec la session, icône dans la barre des menus, notifications du système. L'application n'est pas signée par Apple : la première fois, clic droit, Ouvrir (voir [1. Installation](docs/01-installation.md)).
+- **Mots de passe sur Mac et Linux** : chiffrés avec une clé gardée par le trousseau du système (trousseau de macOS, GNOME Keyring ou KWallet). Sur Windows, rien ne change (DPAPI) : les mots de passe déjà enregistrés sont gardés.
+- **« Une mise à jour est disponible »**, comme DC Scaffold : DC Prospect regarde la dernière version publiée sur GitHub au démarrage puis toutes les 3 heures, et l'affiche en haut de tous les écrans avec **Voir les nouveautés** et **Mettre à jour**. Sur Windows, il prend l'installateur du dossier `Installation` s'il y est, sinon il le télécharge ; sur Mac, le `.dmg` s'ouvre, il reste à glisser l'application dans Applications ; sur Linux, l'AppImage se remplace et redémarre toute seule. Sans internet, rien ne s'affiche.
+- Connexion à Claude et installation de Claude Code dans le Terminal sur Mac et Linux ; le MCP « contact-mail » marche aussi avec l'AppImage.
+- Chaque version est fabriquée pour les trois systèmes par GitHub Actions dès qu'elle est publiée (tag `v1.4.0`), avec les notes de ce journal.
+
+## 1.3.2 (novembre 2026)
+- **« À corriger » plus clair** : « nous à remplacer par je » cite maintenant la phrase où il est (et combien de fois) ; s'il vient de « Ce que je propose » de ton profil, le message le dit (c'est là qu'il faut le corriger, sinon il revient à chaque réécriture). Un « nous » dans une phrase du site du prospect citée entre « » n'est plus signalé.
+- **Objet jamais trop long** : 8 mots au plus, partout ; « Nom de l'entreprise : bénéfice » raccourcit le nom au lieu de dépasser, un objet trop long écrit par l'IA est raccourci tout seul. Le message dit combien de mots il a.
+- **Réécrire corrige vraiment** : les défauts de la version précédente sont donnés à l'IA (intégrée, Gemini ou Claude) pour qu'elle ne les refasse pas, et l'objet est refait avec l'e-mail.
+- Les e-mails déjà en attente sont revérifiés avec ces règles dès l'ouverture.
+
 ## 1.3.1 (novembre 2026)
 - **Tout le code en TypeScript strict** (application Windows, moteur, interface) : `npm run build:ts` compile dans `out/`, `npm run typecheck` vérifie les types ; `npm start`, `engine`, `check` et `build` compilent d'abord. L'installateur ne contient que le JavaScript compilé. Le MCP « contact-mail » pointe maintenant sur `out/backend/mcp-server.js` et se redéclare tout seul au premier démarrage.
 - **Champs des formulaires** : la flèche des listes déroulantes a la même marge à droite que l'icône du calendrier ; les icônes des champs date et heure (et les flèches des nombres) sont claires sur le thème sombre au lieu de noires presque invisibles.
@@ -63,7 +76,7 @@
 - **Santé de l'envoi** : plus de 5 % d'e-mails revenus ou de 8 % de STOP sur les 50 derniers, et l'envoi ralentit de moitié tout seul, avec l'explication.
 - **Lecture des sites enrichie** : titre sans la ville, pas de description pour Google, WordPress ancien ; phrase de présentation de l'entreprise reprise dans l'e-mail ; mesure Google PageSpeed (temps d'affichage sur téléphone, référencement) avec une clé gratuite facultative.
 - **Modèles avec variantes** `{phrase 1|phrase 2}` : deux e-mails ne sont jamais identiques. Nouvelle variable `{{ACCROCHE}}`.
-- Aide et documentation mises à jour ; nouvelle page [9. Vendre DC Prospect](docs/09-vendre.md).
+- Aide et documentation mises à jour.
 
 ## 1.2.0 (novembre 2026)
 - Tout le code passe en anglais : noms de fichiers, fonctions, variables, classes, routes de l'API, outils du MCP (`send_email`, `prospecting_status`, `read_inbox`) et clés des données enregistrées. Les textes de l'application restent en français.

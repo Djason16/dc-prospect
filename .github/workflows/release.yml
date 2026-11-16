@@ -1,0 +1,111 @@
+# Release of DC Prospect: on a pushed tag v<version> (e.g. v1.4.0), builds the app on Windows, macOS (Apple Silicon and
+# Intel) and Linux, then attaches the files to the GitHub release of that tag (created if missing, notes taken from
+# CHANGELOG.md). The app reads that release to tell the users that a new version is there (electron/update.ts).
+# scripts/publish.ps1 still builds the Windows installer on the PC and puts it in the data folder.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            targets: --win nsis
+          - name: macOS
+            os: macos-latest
+            targets: --mac dmg zip --arm64 --x64
+          - name: Linux
+            os: ubuntu-latest
+            targets: --linux AppImage deb tar.gz --x64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install the dependencies
+        run: npm ci
+
+      # The runner is an Apple Silicon Mac: npm ci only installs the built-in AI binaries of arm64.
+      # The Intel ones are added for the x64 build (the files of both are small).
+      - name: Add the Intel binaries of the built-in AI
+        if: runner.os == 'macOS'
+        run: |
+          LLAMA=$(node -p "require('./node_modules/node-llama-cpp/package.json').version")
+          REFLINK=$(node -p "require('./node_modules/@reflink/reflink/package.json').version")
+          npm install --no-save --force "@node-llama-cpp/mac-x64@$LLAMA" "@reflink/reflink-darwin-x64@$REFLINK"
+
+      - name: Compile the TypeScript
+        run: npm run build:ts
+
+      - name: Build the app
+        run: npx electron-builder ${{ matrix.targets }} --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.name }}
+          if-no-files-found: error
+          path: |
+            dist/DC-Prospect-Setup-*.exe
+            dist/DC-Prospect-*-mac-*.dmg
+            dist/DC-Prospect-*-mac-*.zip
+            dist/DC-Prospect-*-linux-*.AppImage
+            dist/DC-Prospect-*-linux-*.deb
+            dist/DC-Prospect-*-linux-*.tar.gz
+
+  release:
+    name: GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Notes of this version (CHANGELOG.md)
+        id: notes
+        run: |
+          echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          node -e "
+            const fs = require('fs')
+            const version = process.argv[1]
+            const changelog = fs.readFileSync('CHANGELOG.md', 'utf8')
+            const start = changelog.indexOf('## ' + version)
+            let notes = 'DC Prospect ' + version
+            if (start >= 0) { const next = changelog.indexOf('\n## ', start + 4); notes = changelog.slice(start, next > 0 ? next : undefined).trim() }
+            notes += '\n\n### Télécharger\n'
+              + '- **Windows** : DC-Prospect-Setup-' + version + '.exe\n'
+              + '- **macOS** : DC-Prospect-' + version + '-mac-arm64.dmg (puce Apple) ou -mac-x64.dmg (Intel)\n'
+              + '- **Linux** : DC-Prospect-' + version + '-linux-x86_64.AppImage, .deb ou .tar.gz\n'
+            fs.writeFileSync('release-notes.md', notes + '\n')
+          " "${GITHUB_REF_NAME#v}"
+          cat release-notes.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: DC Prospect ${{ steps.notes.outputs.version }}
+          body_path: release-notes.md
+          fail_on_unmatched_files: true
+          files: |
+            dist/DC-Prospect-Setup-*.exe
+            dist/DC-Prospect-*-mac-*.dmg
+            dist/DC-Prospect-*-mac-*.zip
+            dist/DC-Prospect-*-linux-*.AppImage
+            dist/DC-Prospect-*-linux-*.deb
+            dist/DC-Prospect-*-linux-*.tar.gz

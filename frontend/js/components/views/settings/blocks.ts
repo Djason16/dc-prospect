@@ -2,6 +2,7 @@
 import { esc } from '../../../utils/dom.js'
 import { store } from '../../../stores/state.js'
 import type { MailGuide, Settings } from '../../../types.js'
+import { VAULT } from '../../../utils/os.js'
 
 export const switchField = (id: string, on: boolean | null | undefined, text: string, disabled = false): string => `<label class="switch"><input type="checkbox" id="${id}" ${on ? 'checked' : ''} ${disabled ? 'disabled' : ''}> ${text}</label>`
 
@@ -93,7 +94,7 @@ export function sendingBlock(s: Settings): string {
                <input type="text" id="gmail-address" value="${esc(gmail.address || (isGmail ? s.sender : ''))}" placeholder="Ton adresse Gmail" autocomplete="off" style="margin-bottom:.5rem">
                <input type="password" id="gmail-password" placeholder="Mot de passe d'application (16 lettres)" autocomplete="off">
                <div class="actions"><button class="btn primary small" data-gmail>Brancher Gmail</button></div>`)
-        : `<p class="small">${mailbox.password ? `Mot de passe de ${esc(s.sender)} enregistré (chiffré par Windows sur ce PC). Serveur : ${esc(s.mailbox.smtpHost)}.` : `Tape le mot de passe de ${esc(s.sender)} (serveur ${esc(s.mailbox.smtpHost || "à choisir dans Avancé")}). Boîte perso (Orange, SFR, Free, Yahoo, Outlook...) : choisis ton fournisseur dans Avancé ; certains demandent un mot de passe d'application.`}</p>
+        : `<p class="small">${mailbox.password ? `Mot de passe de ${esc(s.sender)} enregistré (chiffré par ${VAULT} sur ce PC). Serveur : ${esc(s.mailbox.smtpHost)}.` : `Tape le mot de passe de ${esc(s.sender)} (serveur ${esc(s.mailbox.smtpHost || "à choisir dans Avancé")}). Boîte perso (Orange, SFR, Free, Yahoo, Outlook...) : choisis ton fournisseur dans Avancé ; certains demandent un mot de passe d'application.`}</p>
            ${mailbox.password ? '' : `<div class="actions" style="margin:.2rem 0 .6rem"><button class="btn small" data-detect-mail>Trouver mon serveur tout seul</button><span class="muted small" style="align-self:center">à partir de ton adresse, sans rien taper de technique</span></div>`}
            <input type="password" id="mailbox-password" placeholder="Mot de passe de ${esc(s.sender)}" autocomplete="off">
            <div class="actions"><button class="btn primary small" data-password>Enregistrer et tester</button>${mailbox.password ? '<button class="btn link small" data-test-email>M\'envoyer un e-mail de test</button><button class="btn link small" data-host="forgetPassword">Oublier</button>' : ''}</div>`}

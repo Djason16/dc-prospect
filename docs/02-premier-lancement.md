@@ -19,7 +19,7 @@ Le plus simple : **ta ville et un rayon** (par exemple Compiègne, 20 km), puis 
 ## Étape 3 : qui écrit tes e-mails (ta formule)
 Clique sur une formule (détail dans [4. Réglages](04-reglages.md#formule)) :
 - **Gratuit, sur ce PC** (conseillé si tu n'as pas d'abonnement Claude) : clique sur **Télécharger l'IA intégrée**. Environ 2,5 Go, une seule fois, 5 à 20 minutes selon ta connexion. Tu peux passer à l'étape 4 pendant le téléchargement : les modèles d'e-mails écrivent en attendant.
-- **Avec mon abonnement Claude** : « Pas installé » : clique sur **Installer Claude Code** (une fenêtre PowerShell lance l'installateur officiel d'Anthropic), puis **Actualiser**. « Pas connecté » : clique sur **Se connecter à Claude**, connecte-toi dans ton navigateur, puis reviens et clique sur **Actualiser**.
+- **Avec mon abonnement Claude** : « Pas installé » : clique sur **Installer Claude Code** (une fenêtre PowerShell, ou le Terminal sur macOS et Linux, lance l'installateur officiel d'Anthropic), puis **Actualiser**. « Pas connecté » : clique sur **Se connecter à Claude**, connecte-toi dans ton navigateur, puis reviens et clique sur **Actualiser**.
 - **Avec une clé API** : choisis le fournisseur, colle la clé, **Enregistrer**.
 
 ## Étape 4 : d'où partent tes e-mails

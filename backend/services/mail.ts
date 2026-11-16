@@ -3,7 +3,8 @@
 //   or through the Google API if Google is connected; the copy lands in the Gmail Sent folder by itself.
 // - The pro mailbox itself, whatever the host (Infomaniak today; servers set in Settings, Advanced):
 //   SMTP to send, IMAP to file a copy in "Sent" and read replies.
-// The password is typed by the user in the app (Settings, Accounts), encrypted by Windows (DPAPI, this user only).
+// The password is typed by the user in the app (Settings, Accounts), encrypted by Windows (DPAPI, this user only), or on
+// macOS and Linux with the key kept by the keychain of the system (keyring.ts).
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -16,6 +17,8 @@ import { cfg, localFolder, log, localSettings, updateLocalSettings, powerShellEn
 import { profile, fullName } from './settings.js'
 import { googleActive, googleInfo, sendWithGmailApi, readGmailApi } from './google.js'
 import { storeSecret, readSecret, forgetSecret, hasSecret } from './vault.js'
+import { writeSealed, readSealed } from './keyring.js'
+import { isWindows } from './platform.js'
 import { errorMessage } from '../utils/ResponseHelper.js'
 
 // Envelope of a received e-mail: enough to decide whether it is downloaded (a reply of a prospect, a bounce)
@@ -74,6 +77,11 @@ export const STOP = 'Si vous ne souhaitez plus recevoir de message de ma part, r
 
 function mailboxPassword(): string {
     if (!fs.existsSync(secretFile)) throw new Error('Mot de passe de contact@ pas encore enregistré (Réglages, Comptes)')
+    if (!isWindows) {
+        const saved = readSealed(secretFile)
+        if (!saved) throw new Error('Impossible de lire le mot de passe enregistré : enregistre-le à nouveau (Réglages, Comptes)')
+        return saved
+    }
     const ps = `$s = Get-Content -LiteralPath '${secretFile.replace(/'/g, "''")}' | ConvertTo-SecureString; [Runtime.InteropServices.Marshal]::PtrToStringBSTR([Runtime.InteropServices.Marshal]::SecureStringToBSTR($s))`
     const r = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', ps], { env: powerShellEnv(), encoding: 'utf8', windowsHide: true })
     const password = (r.stdout || '').replace(/\r?\n$/, '')
@@ -221,9 +229,11 @@ export async function testConnection(): Promise<boolean> {
 }
 
 // Saves the password typed in the app: sent to Windows on stdin (never on a command line), encrypted with DPAPI
+// (macOS and Linux: keyring.ts)
 export function saveMailboxPassword(password: string): void {
     if (!password || password.length > 200) throw new Error('Mot de passe vide ou trop long')
     fs.mkdirSync(localFolder, { recursive: true })
+    if (!isWindows) return writeSealed(secretFile, password)
     const ps = `$m = [Console]::In.ReadLine(); ConvertTo-SecureString $m -AsPlainText -Force | ConvertFrom-SecureString | Set-Content -LiteralPath '${secretFile.replace(/'/g, "''")}' -Encoding ASCII`
     const r = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', ps], { env: powerShellEnv(), input: password + '\n', encoding: 'utf8', windowsHide: true })
     if (r.status !== 0 || !fs.existsSync(secretFile)) throw new Error('Enregistrement impossible : ' + (r.stderr || '').slice(0, 200))

@@ -1,8 +1,8 @@
 {
   "name": "dc-prospect",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "private": true,
-  "description": "DC Prospect: Windows app that runs a prospecting plan for any freelancer or small business (leads, e-mails, follow-ups, reports)",
+  "description": "DC Prospect: desktop app (Windows, macOS, Linux) that runs a prospecting plan for any freelancer or small business (leads, e-mails, follow-ups, reports)",
   "type": "module",
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('out',{recursive:true,force:true})\"",
@@ -13,6 +13,8 @@
     "mcp": "npm run build:ts && node out/backend/mcp-server.js",
     "check": "npm run build:ts && node out/backend/check.js",
     "build": "npm run build:ts && electron-builder --win nsis",
+    "build:mac": "npm run build:ts && electron-builder --mac --publish never",
+    "build:linux": "npm run build:ts && electron-builder --linux --publish never",
     "publish": "pwsh -NoProfile -File scripts/publish.ps1"
   },
   "dependencies": {
@@ -34,6 +36,7 @@
   "productName": "DC Prospect",
   "author": "Djason CHERY",
   "license": "UNLICENSED",
+  "homepage": "https://github.com/Djason16/dc-prospect",
   "main": "out/electron/main.js",
   "build": {
     "appId": "dev.djason-chery.prospection",
@@ -56,7 +59,12 @@
       "!**/*.map",
       "!node_modules/@node-llama-cpp/win-x64-cuda/**",
       "!node_modules/@node-llama-cpp/win-x64-cuda-ext/**",
-      "!node_modules/@node-llama-cpp/win-arm64/**"
+      "!node_modules/@node-llama-cpp/win-arm64/**",
+      "!node_modules/@node-llama-cpp/linux-x64-cuda/**",
+      "!node_modules/@node-llama-cpp/linux-x64-cuda-ext/**",
+      "!node_modules/@node-llama-cpp/linux-arm64/**",
+      "!node_modules/@node-llama-cpp/linux-armv7l/**",
+      "!node_modules/@node-llama-cpp/linux-riscv64/**"
     ],
     "win": {
       "target": "nsis",
@@ -73,6 +81,60 @@
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false,
       "include": "build/installer.nsh"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.business",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "artifactName": "DC-Prospect-${version}-mac-${arch}.${ext}"
+    },
+    "dmg": {
+      "artifactName": "DC-Prospect-${version}-mac-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "tar.gz",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Office",
+      "executableName": "dc-prospect",
+      "synopsis": "La prospection par e-mail faite à ta place",
+      "maintainer": "Djason CHERY",
+      "artifactName": "DC-Prospect-${version}-linux-x86_64.${ext}"
     }
   }
 }

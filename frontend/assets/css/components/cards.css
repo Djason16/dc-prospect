@@ -15,6 +15,9 @@
 .banner { display: flex; gap: 1rem; align-items: center; justify-content: space-between; padding: 1rem 1.3rem; margin-bottom: 1.6rem; border: 1px solid rgba(126, 230, 168, 0.35); background: rgba(126, 230, 168, 0.08); }
 .banner.error { border-color: rgba(255, 143, 133, 0.45); background: rgba(255, 143, 133, 0.08); }
 .banner.info { border-color: var(--line); background: var(--panel); }
+/* New version (on every screen): its two buttons stay side by side */
+.banner.update { border-color: var(--mint); }
+.banner.update .actions { margin-top: 0; flex-shrink: 0; }
 .empty { padding: 1.4rem; border: 1px dashed var(--line); color: var(--paper-muted); }
 .problem { margin-top: 0.7rem; color: var(--red); }
 @media (max-width: 560px) {

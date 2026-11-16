@@ -132,10 +132,11 @@ export async function rewriteDraft(p: Prospect | undefined, step: StepName): Pro
     const d = p?.drafts?.[step]
     if (!p || !d || !['toApprove', 'reserved'].includes(d.status)) throw new Error('Brouillon introuvable')
     if (step === 'first') {
-        const m = await firstEmail(p, { subjectStyle: d.subjectStyle || 'A', bodyStyle: d.bodyStyle || 'standard' })
-        Object.assign(d, { subject: capitalizeSubject(m.subject), body: m.body, writer: writingEngine(), problems: checkText(m.subject, m.body) })
+        // the problems of this version go to the writer, so that the new one does not make them again
+        const m = await firstEmail(p, { subjectStyle: d.subjectStyle || 'A', bodyStyle: d.bodyStyle || 'standard', fix: d.problems })
+        Object.assign(d, { subject: capitalizeSubject(m.subject), body: m.body, writer: writingEngine(), problems: checkText(capitalizeSubject(m.subject), m.body) })
     } else {
-        const r = await followUp(p, step)
+        const r = await followUp(p, step, d.problems)
         Object.assign(d, { body: r.body, writer: writingEngine(), problems: checkText('', r.body) })
     }
     return d

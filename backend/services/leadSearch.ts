@@ -163,7 +163,7 @@ export async function addLead(state: State, c: FoundCompany, { trade, town, zone
         const subjectStyle = nextSubjectStyle(state), bodyStyle = nextBodyStyle(state)
         const mail = await firstEmail(p, { subjectStyle, bodyStyle: bodyStyle || 'standard' })
         p.status = 'ready'
-        p.drafts.first = { subject: capitalizeSubject(mail.subject), body: mail.body, status: 'reserved', preparedOn: day, subjectStyle, ...(bodyStyle ? { bodyStyle } : {}), writer: writingEngine(), problems: checkText(mail.subject, mail.body) }
+        p.drafts.first = { subject: capitalizeSubject(mail.subject), body: mail.body, status: 'reserved', preparedOn: day, subjectStyle, ...(bodyStyle ? { bodyStyle } : {}), writer: writingEngine(), problems: checkText(capitalizeSubject(mail.subject), mail.body) }
     } catch (err) { p.status = 'discarded'; p.reason = 'rédaction impossible : ' + (err as Error).message.slice(0, 100) }
     state.prospects.push(p)
     return p.status === 'ready' ? 'ready' : 'discarded'

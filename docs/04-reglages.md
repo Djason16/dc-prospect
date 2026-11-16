@@ -2,7 +2,7 @@
 
 L'onglet **Réglages** montre d'abord l'essentiel (profil, comptes, application) ; tout le reste est replié dans **Avancé**.
 
-Ce qui est **partagé entre tes PC** (dans le dossier de données, `Données\settings.json`) : profil, adresse et serveur d'envoi, zones, métiers, volumes. Ce qui est **propre à ce PC** (`%APPDATA%\prospection-auto`) : comptes, mots de passe, dossier de données choisi, démarrage avec Windows.
+Ce qui est **partagé entre tes PC** (dans le dossier de données, `Données\settings.json`) : profil, adresse et serveur d'envoi, zones, métiers, volumes. Ce qui est **propre à ce PC** (`%APPDATA%\prospection-auto` sur Windows, `~/Library/Application Support/prospection-auto` sur macOS, `~/.config/prospection-auto` sur Linux) : comptes, mots de passe, dossier de données choisi, démarrage avec la session.
 
 ## Profil
 | Champ | Utilisation |
@@ -45,7 +45,7 @@ Dans tous les cas, ce qui compte (registre, site, e-mail publié) est vérifié 
 - **Tout vérifier** : teste l'envoi et la lecture, le moteur, le registre des entreprises et le dossier de données, sans rien envoyer.
 
 ## Application
-- Version, « Démarrer avec Windows », installer une mise à jour, ouvrir le dossier des données, quitter l'application.
+- Version, « Démarrer avec Windows » (« avec macOS », « avec Linux »), mise à jour disponible (**Mettre à jour**, **Voir les nouveautés**), ouvrir le dossier des données, quitter l'application.
 
 ## Avancé
 ### Zones

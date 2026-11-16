@@ -6,7 +6,8 @@ export function toast(text: string | undefined, isError = false): void {
     t.className = 'toast' + (isError ? ' error' : '')
     t.textContent = text ?? ''
     $('#toasts').append(t)
-    setTimeout(() => t.remove(), isError ? 9000 : 5000)
+    // long texts (how to finish an update...) stay longer
+    setTimeout(() => t.remove(), Math.max(isError ? 9000 : 5000, t.textContent.length * 60))
 }
 
 // successMessage: a text, or a function of the result (« 3 lignes en cours de vérification »)

@@ -20,7 +20,8 @@ Copy-Item (Join-Path $root "dist\DC-Prospect-Setup-$version.exe") -Destination (
 @{ version = $version; file = 'DC-Prospect-Setup.exe'; fichier = 'DC-Prospect-Setup.exe'; date = (Get-Date -Format 'yyyy-MM-dd HH:mm') } | ConvertTo-Json | Set-Content (Join-Path $folder 'latest.json') -Encoding UTF8
 Write-Host "Publié : DC Prospect $version dans $folder" -ForegroundColor Green
 
-# GitHub release with the installer (the file is too big for the repository itself: GitHub refuses files over 100 MB)
+# GitHub release with the installer (the file is too big for the repository itself: GitHub refuses files over 100 MB).
+# The macOS and Linux files are added by the workflow .github/workflows/release.yml when the tag v<version> is pushed.
 if (Get-Command gh -ErrorAction SilentlyContinue) {
     $tag = "v$version"
     $notesFile = Join-Path $env:TEMP "dc-prospect-$tag.md"

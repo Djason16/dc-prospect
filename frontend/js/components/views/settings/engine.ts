@@ -5,6 +5,7 @@ import { store } from '../../../stores/state.js'
 import { api, ensureSuccess, hostAction } from '../../../api.js'
 import { runAction, toast } from '../../ui/Toast.js'
 import type { ClaudeStatus, EngineSettings, SampleEmail, Settings } from '../../../types.js'
+import { VAULT } from '../../../utils/os.js'
 
 type Formula = 'free' | 'gemini' | 'claude' | 'api'
 
@@ -65,7 +66,7 @@ function apiBlock(e: Partial<EngineSettings>): string {
         <div class="grid g2">
             ${p === 'openai' ? `<div style="grid-column:1/-1"><p class="muted small" style="margin:0">Fournisseur : ${Object.entries(OPENAI_HOSTS).map(([name, url]) => `<button class="btn link small" data-api-host="${esc(url)}">${esc(name)}</button>`).join('')} (Groq, Mistral, OpenRouter et Cerebras ont une offre gratuite limitée)</p></div>
             <div><label class="label field" for="ai-base">Adresse de l'API</label><input type="text" id="ai-base" value="${esc(e.baseUrl || '')}" placeholder="https://api.openai.com/v1"></div>` : ''}
-            <div><label class="label field" for="ai-key">Clé API ${info?.keySaved ? '(enregistrée, chiffrée par Windows)' : ''}</label><input type="password" id="ai-key" placeholder="${info?.keySaved ? 'Coller une nouvelle clé pour la remplacer' : 'Colle ta clé'}" autocomplete="off"></div>
+            <div><label class="label field" for="ai-key">Clé API ${info?.keySaved ? `(enregistrée, chiffrée par ${VAULT})` : ''}</label><input type="password" id="ai-key" placeholder="${info?.keySaved ? 'Coller une nouvelle clé pour la remplacer' : 'Colle ta clé'}" autocomplete="off"></div>
             <div><label class="label field" for="ai-search-model">Modèle pour chercher (facultatif)</label><input type="text" id="ai-search-model" value="${esc(e.searchModel || '')}" placeholder="par défaut"></div>
             <div><label class="label field" for="ai-writing-model">Modèle pour écrire (facultatif)</label><input type="text" id="ai-writing-model" value="${esc(e.writingModel || '')}" placeholder="par défaut"></div>
         </div>

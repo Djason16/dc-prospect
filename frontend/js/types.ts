@@ -61,7 +61,7 @@ export interface Stats {
 
 export interface Health {
     password?: boolean; mailbox?: boolean; claude?: boolean; drive?: boolean; machine?: string; version?: string
-    standby?: string | null; inApp?: boolean; update?: { version: string; file?: string; notes?: string } | null
+    standby?: string | null; inApp?: boolean; update?: UpdateInfo | null
 }
 
 export interface DayState {
@@ -100,9 +100,12 @@ export interface GoogleStatus {
     client: boolean; connected: boolean; email: string | null; canRead: boolean; options?: { sheets?: boolean; docs?: boolean }
     folder: string | null; spreadsheet: string | null
 }
+// A newer version: installer on the data folder (file) or file of the GitHub release (url), its page (page)
+export interface UpdateInfo { version: string; file?: string; url?: string; asset?: string; page?: string; notes?: string }
+
 // Accounts: those of the Windows app (claude, google, update...) only when the page runs inside it
 export interface Accounts {
-    claude?: ClaudeStatus; google?: GoogleStatus; mailbox?: { password: boolean }; folder?: string; update?: { version: string } | null
+    claude?: ClaudeStatus; google?: GoogleStatus; mailbox?: { password: boolean }; folder?: string; update?: UpdateInfo | null
     version?: string; mcp?: string | null; gmail?: { configured: boolean; address?: string }; sendingMode?: 'gmail' | 'mailbox'
 }
 

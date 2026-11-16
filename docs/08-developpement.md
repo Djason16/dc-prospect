@@ -3,7 +3,7 @@
 ## Les briques
 | Brique | Choix |
 |---|---|
-| Application Windows | Electron (fenêtre, icône près de l'horloge, notifications, démarrage avec Windows) |
+| Application de bureau | Electron, pour Windows, macOS et Linux (fenêtre, icône près de l'horloge ou dans la barre des menus, notifications, démarrage avec la session) |
 | Langage | TypeScript strict partout (`electron/`, `backend/`, `frontend/js/`), compilé par `tsc` dans `out/` (voir [TypeScript](#typescript)) |
 | Moteur et API | Node.js (modules ES), serveur `http` sans framework, réponses au format DC Scaffold `{ success, ... }` |
 | Interface | HTML, CSS et modules ES chargés tels quels par la fenêtre, sans bundler (rangement du stack « HTML / CSS / JS » de DC Scaffold) |
@@ -11,7 +11,8 @@
 | E-mails | nodemailer (SMTP), imapflow (IMAP), mailparser |
 | Tableau | exceljs ; Google Sheets et Drive par leurs API REST (option) |
 | MCP | @modelcontextprotocol/sdk, zod |
-| Installateur | electron-builder (NSIS, une installation par utilisateur, `asar: false` pour que le MCP et l'interface restent de vrais fichiers) |
+| Installateur | electron-builder (`asar: false` pour que le MCP et l'interface restent de vrais fichiers) : Windows NSIS (une installation par utilisateur), macOS `.dmg` et `.zip` (arm64 et x64, signature ad hoc), Linux AppImage, `.deb` et `.tar.gz` (x64) |
+| Publication | `scripts/publish.ps1` (Windows : dossier de données et release GitHub) ; `.github/workflows/release.yml` (les trois systèmes, sur un tag `v*`) |
 
 ## Arborescence
 Tout le code est en anglais (fichiers, fonctions, variables, routes, clés des données) ; seuls les textes lus par l'utilisateur sont en français.
@@ -49,8 +50,10 @@ dc-prospect/
 │   │   ├── mail.ts             signatures, composition, envoi et lecture (Gmail ou boîte pro), tests
 │   │   ├── google.ts           OAuth bureau (PKCE), Gmail API, Drive (rapports en Docs), Sheets
 │   │   ├── report.ts           chiffres, tableau (Excel et Sheets), rapport du jour, bilan du vendredi
-│   │   ├── vault.ts            secrets chiffrés par Windows (DPAPI via PowerShell)
-│   │   └── system.ts           verrou entre PC, notifications sans fenêtre, nettoyage des journaux
+│   │   ├── vault.ts            secrets chiffrés : Windows (DPAPI via PowerShell), sinon keyring.ts
+│   │   ├── keyring.ts          macOS et Linux : AES-256-GCM, clé gardée par le trousseau (security, secret-tool)
+│   │   ├── platform.ts         ce qui change d'un système à l'autre : dossier local, PATH, terminal, ouvrir un fichier
+│   │   └── system.ts           verrou entre PC, notifications sans fenêtre (Windows, macOS, Linux), nettoyage des journaux
 │   └── utils/ResponseHelper.ts  { success: true, ...data } / { success: false, error, type } ; ApiError
 ├── frontend/
 │   ├── pages/index.html        la page (le cadre est ajouté par AppShell)
@@ -62,18 +65,22 @@ dc-prospect/
 │       ├── types.ts            formes des réponses de l'API (journée, prospects, réglages, comptes)
 │       ├── stores/state.ts     état de l'interface
 │       ├── utils/dom.ts        $, $$, esc, pct, labelCells (tableaux en cartes sur écran étroit)
+│       ├── utils/os.ts         système de l'ordinateur (textes « Démarrer avec Windows », chemins, trousseau)
 │       └── components/         layout/AppShell, ui/ (Toast, EmailCard), views/ (Today, Prospects, Settings, Help),
 │                               views/settings/ (blocks, engine, calendar, templates, diagnosis)
-├── electron/main.ts            l'application Windows, les actions « hôte » (comptes, dossiers, mises à jour, MCP)
+├── electron/main.ts            l'application de bureau, les actions « hôte » (comptes, dossiers, mises à jour, MCP)
+├── electron/desktop.ts         ce qui diffère entre Windows, macOS et Linux : démarrage, Claude Code, MCP, textes
+├── electron/update.ts          mises à jour : dossier Installation (Windows) et dernière release GitHub (tous)
 ├── out/                        le JavaScript compilé (npm run build:ts), jamais dans Git : c'est lui qui tourne
 ├── tsconfig.base.json, tsconfig.json, frontend/js/tsconfig.json  réglages de TypeScript (communs, Node, interface)
 ├── resources/prompts/          prospect-sheet.txt, first-email.txt, follow-up.txt ({{NOM}}, {{ACTIVITE}}, {{OFFRE}}...)
-├── build/icon.png              icône (512 px)
+├── build/icon.png              icône (512 px) ; build/icon.icns : la même pour macOS (faite depuis icon.png avec Pillow)
 ├── build/fonts/, build/logo-light.png  polices Barlow Condensed (licence OFL) et logo, pour la bannière
 ├── build/installer.nsh         étape en plus de l'installateur : propose d'installer Claude Code s'il manque
 ├── scripts/publish.ps1         fabrique l'installateur et le dépose dans <données>\Installation
 ├── scripts/make-banner.py      dessine la bannière et la ligne du README (Python + Pillow), même mise en page que DC Scaffold
-├── start.bat, start.ps1        le menu du projet
+├── start.bat, start.ps1        le menu du projet (Windows) ; start.sh : le même sur macOS et Linux
+├── .github/workflows/release.yml  fabrique l'application des trois systèmes sur un tag v* et la joint à la release
 ├── config.json                 réglages par défaut, sans rien de personnel
 └── package.json
 ```
@@ -89,7 +96,9 @@ Double-clic sur `start.bat` (ou `.\start.ps1 -Action <touche>`) :
 | `B` Build | `npm run build` : compile, puis `electron-builder --win nsis` ; installateur dans `dist\` |
 | `P` Publier | `scripts\publish.ps1` |
 
-**Tester sans toucher aux vraies données** : `PROSPECTION_DRIVE=<dossier de test>` et `PROSPECTION_PORT=4799` (le moteur prend ce dossier et ce port). Pour ne pas toucher non plus aux réglages de ce PC (`local.json`, mots de passe, MCP), lance-le avec `APPDATA=<autre dossier de test>`.
+Sur **macOS et Linux** : `./start.sh` (ou `./start.sh D`), mêmes touches sauf `P` ; `B` lance `npm run build:mac` ou `npm run build:linux`. Il faut Node.js 22 et `npm install` sur ce système (les binaires de l'IA intégrée, `@node-llama-cpp/<système>`, viennent de npm pour le système où il tourne). Les dossiers de ce PC sont `~/Library/Application Support/prospection-auto` (macOS) et `~/.config/prospection-auto` (Linux).
+
+**Tester sans toucher aux vraies données** : `PROSPECTION_DRIVE=<dossier de test>` et `PROSPECTION_PORT=4799` (le moteur prend ce dossier et ce port). Pour ne pas toucher non plus aux réglages de ce PC (`local.json`, mots de passe, MCP), lance-le avec `APPDATA=<autre dossier de test>` (marche aussi sur macOS et Linux). `PROSPECTION_NO_UPDATE=1` coupe la recherche de mise à jour ; `PROSPECTION_UPDATE_CHECK=1` l'active avec `npm start` (sinon seule l'application installée regarde GitHub).
 
 ## TypeScript
 Tout le code est en TypeScript strict (`strict: true`, aucun `any` sauf aux frontières : JSON lu sur le disque ou reçu d'une API, aussitôt typé). `tsc` compile, sans bundler :
@@ -123,12 +132,12 @@ Toutes les réponses : `{ success: true, ...data }` ou `{ success: false, error,
 | `PUT /api/accounts/sending-mode` | AccountsController.sendingMode | `{ mode: gmail \| mailbox }` |
 | `POST /api/accounts/test-email` | AccountsController.testEmail | E-mail de test à soi-même |
 | `POST /api/accounts/check` | AccountsController.check | Vérifie tout |
-| `POST /api/host` | AccountsController.host | `{ action, value }` : actions de l'application Windows (connexion Claude et Google, dossiers, démarrage, mises à jour, MCP, quitter) |
+| `POST /api/host` | AccountsController.host | `{ action, value }` : actions de l'application de bureau (connexion Claude et Google, dossiers, démarrage, mises à jour `checkUpdate` et `installUpdate`, MCP, quitter) |
 
 ## Les réglages
 - `config.json` : valeurs par défaut (aucune donnée personnelle).
 - `Données\settings.json` (partagé) : remplace `profile`, `sender`, `smtp`, `imap`, `zones`, `trades`, volumes, calendrier, modèles.
-- `%APPDATA%\prospection-auto\local.json` (ce PC) : `dataFolder`, `promptsFolder`, `sendingMode`, `autoStart`, `mcpPath`, `mcpDeclaredAt`.
+- `%APPDATA%\prospection-auto\local.json` (ce PC ; `~/Library/Application Support/prospection-auto` sur macOS, `~/.config/prospection-auto` sur Linux) : `dataFolder`, `promptsFolder`, `sendingMode`, `autoStart`, `mcpPath`, `mcpDeclaredAt`.
 
 ## Passage à la 1.2.0 (code et données en anglais)
 Au premier lancement de la 1.2.0, `backend/services/migration.ts` convertit une seule fois ce qu'une version plus ancienne a écrit :
@@ -139,14 +148,19 @@ Au premier lancement de la 1.2.0, `backend/services/migration.ts` convertit une 
 Une version plus ancienne ne sait pas relire les fichiers convertis : installe la 1.2.0 sur **tous** les PC qui partagent le dossier de données. Le verrou de l'ancienne version (`verrou.json`) reste respecté, pour que deux PC ne tournent jamais ensemble.
 
 ## Fabriquer et publier
-1. Monte `version` dans `package.json` (ex. `1.0.1`) et note les changements dans `CHANGELOG.md`.
-2. `start.bat`, touche `P` : fabrique `dist\DC-Prospect-Setup-<version>.exe`, le copie en `DC-Prospect-Setup.exe` dans `<dossier de données>\Installation` et écrit `latest.json`. Les PC qui utilisent ce dossier de données affichent « Nouvelle version ».
-3. Le même script crée (ou met à jour) la **release GitHub** `v<version>` avec l'installateur en pièce jointe (il faut `gh` connecté). L'installateur ne va jamais dans le dépôt lui-même : GitHub refuse les fichiers de plus de 100 Mo.
-4. Commit et push des changements (en anglais).
+1. Monte `version` dans `package.json` et `package-lock.json` (ex. `1.4.1`) et note les changements dans `CHANGELOG.md` (titre `## 1.4.1 (mois année)` : il sert de notes à la release).
+2. Commit et push des changements (en anglais).
+3. **Les trois systèmes** : pousse le tag, `git tag v1.4.1` puis `git push origin v1.4.1`. Le workflow `.github/workflows/release.yml` fabrique sur GitHub Actions l'installateur Windows (`windows-latest`), les `.dmg` et `.zip` macOS arm64 et x64 (`macos-latest`, puce Apple : les binaires Intel de l'IA intégrée sont ajoutés avant), l'AppImage, le `.deb` et le `.tar.gz` Linux (`ubuntu-latest`), puis crée la release `v1.4.1` (ou la complète) avec les notes du CHANGELOG et tous les fichiers. Suivi : onglet Actions du dépôt (environ 15 minutes).
+4. **Le dossier de données (Windows)** : `start.bat`, touche `P` : fabrique `dist\DC-Prospect-Setup-<version>.exe`, le copie en `DC-Prospect-Setup.exe` dans `<dossier de données>\Installation` et écrit `latest.json` ; il crée aussi la release GitHub si elle n'existe pas encore, ou y remplace l'installateur (il faut `gh` connecté). Les fichiers ne vont jamais dans le dépôt lui-même : GitHub refuse les fichiers de plus de 100 Mo.
+5. Les applications installées voient la nouvelle version au démarrage ou dans les 3 heures : une bande « Une mise à jour est disponible : 1.4.1 » avec **Voir les nouveautés** et **Mettre à jour** (`electron/update.ts`). Elles lisent `https://api.github.com/repos/Djason16/dc-prospect/releases/latest` (sans jeton, 60 demandes par heure et par adresse) et cherchent le fichier de leur système par son nom : `DC-Prospect-Setup-<v>.exe`, `DC-Prospect-<v>-mac-arm64.dmg` ou `-mac-x64.dmg`, `DC-Prospect-<v>-linux-x86_64.AppImage`, `.deb` ou `.tar.gz` (garde ces noms). Une release sans le fichier d'un système n'est pas proposée sur ce système.
+
+Fabriquer à la main : `npm run build` (Windows), `npm run build:mac` (sur un Mac), `npm run build:linux` (sur Linux). Le `.tar.gz` Linux se fabrique aussi depuis Windows (`npx electron-builder --linux tar.gz --publish never`), mais sans les binaires Linux de l'IA intégrée : pour une vraie version, passe par le workflow.
 
 Pièges :
 - Un build interrompu laisse des fichiers ouverts dans `dist` : arrête les processus `app-builder` restants avant de relancer.
 - Garde l'`appId` (`dev.djason-chery.prospection`) : le changer créerait une deuxième application au lieu de mettre à jour.
+- macOS : l'application est signée « ad hoc » (`identity: "-"`, `hardenedRuntime: false`) et pas notarisée : sans au moins cette signature, un Mac à puce Apple refuse de la lancer. Les utilisateurs l'ouvrent une première fois par clic droit, Ouvrir (voir [1. Installation](01-installation.md)).
+- Linux : le paquet `.deb` demande `homepage` et `maintainer` dans `package.json` (electron-builder s'arrête sinon).
 - Le journal écrit sur la sortie d'erreur : la sortie standard est réservée au protocole du MCP.
 
 ## Conventions
