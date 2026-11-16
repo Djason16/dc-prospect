@@ -18,7 +18,8 @@ function textProblems(body: string): string[] {
     const p = []
     if (/[—–]/.test(body)) p.push('tiret long')
     if (/\[|\]|___|\{|\}/.test(body)) p.push('crochet')
-    if (/\bnous\b/i.test(body)) p.push('nous')
+    // « nous » outside the quotes (a sentence of the prospect's site may say it)
+    if (/\bnous\b/i.test(body.replace(/«[^»]*»/g, ''))) p.push('nous')
     if (/signature|stop/i.test(body)) p.push('signature ou STOP')
     if (/\bleurs? (site|page|entreprise)\b|\bils ont\b/i.test(body)) p.push('parle de l\'entreprise au lieu de lui parler')
     if (/\*|^#|^\s*- /m.test(body)) p.push('mise en forme (gras, titres, listes)')
@@ -61,15 +62,18 @@ Réponds uniquement en JSON : { "body": "le texte" }`
     return draft
 }
 
+// What the previous version got wrong (button « Réécrire »)
+const avoid = (fix?: string[]) => (fix?.length ? ` Une version précédente avait ces défauts, ne les refais pas : ${fix.join(' ; ')}.` : '')
+
 export async function localFirstEmail(p: TemplateFacts, options?: WritingOptions): Promise<WrittenEmail> {
     const draft = templateFirstEmail(p, options)
     const length = options?.bodyStyle === 'short' ? 'court (40 à 70 mots)' : 'entre 90 et 150 mots'
-    return { subject: draft.subject, body: await polish(draft.body, `Voici un e-mail de prospection écrit à partir de faits vérifiés. Réécris-le pour qu'il sonne naturel et personnel, ${length}, en gardant chaque fait et la question finale.`) }
+    return { subject: draft.subject, body: await polish(draft.body, `Voici un e-mail de prospection écrit à partir de faits vérifiés. Réécris-le pour qu'il sonne naturel et personnel, ${length}, en gardant chaque fait et la question finale.${avoid(options?.fix)}`) }
 }
 
-export async function localFollowUp(p: TemplateFacts, step: StepName): Promise<{ body: string }> {
+export async function localFollowUp(p: TemplateFacts, step: StepName, fix?: string[]): Promise<{ body: string }> {
     const draft = templateFollowUp(p, step)
-    return { body: await polish(draft.body, 'Voici une relance de prospection. Réécris-la pour qu\'elle sonne naturelle, courte (60 à 120 mots), en gardant le conseil et la proposition finale.') }
+    return { body: await polish(draft.body, `Voici une relance de prospection. Réécris-la pour qu'elle sonne naturelle, courte (60 à 120 mots), en gardant le conseil et la proposition finale.${avoid(fix)}`) }
 }
 
 export async function localReply(p: TemplateFacts & Pick<Prospect, 'reply'>, kind: AnswerKind): Promise<{ body: string }> {

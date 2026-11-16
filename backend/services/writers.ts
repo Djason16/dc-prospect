@@ -18,7 +18,7 @@ export const writingEngine = (): 'templates' | 'ai' => (cfg.writingEngine === 't
 // the built-in AI polishes the templates (localWriter.ts): a small model must not write from nothing
 const local = () => provider() === 'local'
 export const firstEmail = (p: Prospect, options: WritingOptions): WrittenEmail | Promise<WrittenEmail> => (writingEngine() === 'templates' ? templateFirstEmail(p, options) : local() ? localFirstEmail(p, options) : writeFirstEmail(p, options))
-export const followUp = (p: Prospect, step: StepName): { body: string } | Promise<{ body: string }> => (writingEngine() === 'templates' ? templateFollowUp(p, step) : local() ? localFollowUp(p, step) : writeFollowUp(p, step))
+export const followUp = (p: Prospect, step: StepName, fix?: string[]): { body: string } | Promise<{ body: string }> => (writingEngine() === 'templates' ? templateFollowUp(p, step) : local() ? localFollowUp(p, step, fix) : writeFollowUp(p, step, fix))
 // Style of subject of the next first e-mail: each style is tried, then the one that makes people reply is used more (bandit)
 export const nextSubjectStyle = (state: State) => pickArm<SubjectStyle>(state, ['A', 'B'], (p) => p.drafts?.first?.subjectStyle)
 // Length of the first e-mail when it comes from the templates (without AI or built-in AI): standard or short, the one that makes people reply wins

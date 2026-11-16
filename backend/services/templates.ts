@@ -10,7 +10,7 @@ import type { Prospect, StepName, AnswerKind, WrittenEmail, SubjectStyle, BodySt
 
 /** What the templates need to know about a prospect (an imported line or a test has only some of it) */
 export type TemplateFacts = Pick<Prospect, 'company'> & Partial<Pick<Prospect, 'trade' | 'city' | 'contact' | 'audit' | 'signal'>>
-export interface WritingOptions { subjectStyle?: SubjectStyle, bodyStyle?: BodyStyle }
+export interface WritingOptions { subjectStyle?: SubjectStyle, bodyStyle?: BodyStyle, fix?: string[] }
 type TemplateName = 'first' | 'firstShort' | 'followUp1' | 'followUp2' | 'reply'
 type EditableTemplate = Exclude<TemplateName, 'reply'>
 
@@ -97,7 +97,8 @@ function subject(p: TemplateFacts, style: SubjectStyle): string {
     const s = p.audit?.signals?.[0] || p.signal || ''
     const name = (n: number) => p.company.split(/\s+/).slice(0, n).join(' ')
     // several wordings of each style: the same subject sent tens of times looks like a mass mailing
-    if (style === 'B') return pick([`${name(4)} : plus de clients en ligne`, `${name(4)} : être trouvé sur Google`, `${name(4)} et vos futurs clients`])
+    // the name keeps the words that fit in 8 (« Name : plus de clients en ligne » = the name, « : » and 5 words)
+    if (style === 'B') return pick([`${name(2)} : plus de clients en ligne`, `${name(3)} : être trouvé sur Google`, `${name(4)} et vos futurs clients`])
     if (/téléphone/.test(s)) return pick(['Votre site sur téléphone ?', 'Votre site sur mobile ?', 'Une question sur votre site'])
     if (/pas de site/.test(s)) return pick([`Un site pour ${name(3)} ?`, `${name(3)} sur internet ?`])
     if (/titre|description|référencement|Google/.test(s)) return pick(['Votre site sur Google ?', 'Une idée pour votre visibilité'])

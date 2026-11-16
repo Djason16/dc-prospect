@@ -1,5 +1,11 @@
 # Journal des versions
 
+## 1.3.2 (novembre 2026)
+- **« À corriger » plus clair** : « nous à remplacer par je » cite maintenant la phrase où il est (et combien de fois) ; s'il vient de « Ce que je propose » de ton profil, le message le dit (c'est là qu'il faut le corriger, sinon il revient à chaque réécriture). Un « nous » dans une phrase du site du prospect citée entre « » n'est plus signalé.
+- **Objet jamais trop long** : 8 mots au plus, partout ; « Nom de l'entreprise : bénéfice » raccourcit le nom au lieu de dépasser, un objet trop long écrit par l'IA est raccourci tout seul. Le message dit combien de mots il a.
+- **Réécrire corrige vraiment** : les défauts de la version précédente sont donnés à l'IA (intégrée, Gemini ou Claude) pour qu'elle ne les refasse pas, et l'objet est refait avec l'e-mail.
+- Les e-mails déjà en attente sont revérifiés avec ces règles dès l'ouverture.
+
 ## 1.3.1 (novembre 2026)
 - **Tout le code en TypeScript strict** (application Windows, moteur, interface) : `npm run build:ts` compile dans `out/`, `npm run typecheck` vérifie les types ; `npm start`, `engine`, `check` et `build` compilent d'abord. L'installateur ne contient que le JavaScript compilé. Le MCP « contact-mail » pointe maintenant sur `out/backend/mcp-server.js` et se redéclare tout seul au premier démarrage.
 - **Champs des formulaires** : la flèche des listes déroulantes a la même marge à droite que l'icône du calendrier ; les icônes des champs date et heure (et les flèches des nombres) sont claires sur le thème sombre au lieu de noires presque invisibles.

@@ -7,6 +7,7 @@ import { zoneOfTheWeek } from '../services/settings.js'
 import { figures, figuresByTrade, figuresBySubject } from '../services/report.js'
 import { replyModel, insights, bestMoments, sendingHealth, armStats } from '../services/learning.js'
 import { writingHints, searchAdvice } from '../services/followThrough.js'
+import { checkText } from '../services/claude.js'
 import { activeTrades } from '../services/settings.js'
 import { canRestore } from '../services/leadsTools.js'
 import { ApiError } from '../utils/ResponseHelper.js'
@@ -29,7 +30,9 @@ export const StateController = {
     getAll(app: App) {
         const state = app.state
         const card = ({ p, step, draft }: DraftItem) => ({
-            id: p.id, step, stepName: STEP_NAME[step], subject: draft.subject, body: draft.body, batch: draft.batch, problems: draft.problems || [],
+            id: p.id, step, stepName: STEP_NAME[step], subject: draft.subject, body: draft.body, batch: draft.batch,
+            // checked again with the rules of today (a draft written before a change of the rules keeps no old problem)
+            problems: checkText(step === 'first' ? draft.subject : '', draft.body),
             status: draft.status, autoApproved: !!draft.autoApproved, hints: writingHints(draft.subject, draft.body), company: p.company, trade: p.trade, city: p.city, zone: p.zone, email: p.email, emailSource: p.emailSource,
             website: p.website, platform: p.platform, signal: p.signal, googleRating: p.googleRating, detail: p.detail, score: p.score, level: p.level,
             facts: p.audit?.signals || [], emailChecked: !!p.emailChecked, chance: typeof p.chance === 'number' ? Math.round(p.chance * 1000) / 10 : null, subjectStyle: draft.subjectStyle || null, writer: draft.writer || null,

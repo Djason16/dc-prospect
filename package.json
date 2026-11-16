@@ -1,6 +1,6 @@
 {
   "name": "dc-prospect",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "private": true,
   "description": "DC Prospect: Windows app that runs a prospecting plan for any freelancer or small business (leads, e-mails, follow-ups, reports)",
   "type": "module",
